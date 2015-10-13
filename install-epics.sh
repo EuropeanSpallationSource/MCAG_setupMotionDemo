@@ -1,12 +1,13 @@
 #!/bin/sh
 
-BASHRC=~/.bashrc
-BASH_ALIAS_EPICS=~/.epics
+EPICS_DOWNLOAD=$PWD/epicsMotionDemo
+
+BASH_ALIAS_EPICS=/tmp/$$.epics
 
 #Version of base
 EPICS_BASE_VER=3.15.2
 BASE_VER=GIT
-EPICS_BASE_GIT_VER=R3.14.12.5
+#EPICS_BASE_GIT_VER=R3.14.12.5
 EPICS_BASE_GIT_VER=R3.15.2
 
 
@@ -16,11 +17,10 @@ SYNAPPSVER=5_8
 #Version for ASYN
 #ASYNVER=4-21
 ASYNVER=GIT
-ASYN_GIT_VER=R4-27
+ASYN_GIT_VER=R4-26
 
-#MOTORVER=R6-8-1
 MOTORVER=GIT
-MOTOR_GIT_VER=R6-8-1
+MOTOR_GIT_VER=ac4f56b
 #MOTOR_GIT_VER=master
 #MOTOR_GIT_VER=d5be8003ba
 #http://www.aps.anl.gov/bcda/synApps/motor/tar/motorR6-8-1.tar.gz
@@ -34,6 +34,7 @@ if test -n "$SYNAPPSVER"; then
 fi
 
 # Debug version for e.g. kdbg
+EPICS_DEBUG=n
 if test "$EPICS_DEBUG" = ""; then
   if type kdbg; then
     EPICS_DEBUG=y
@@ -700,18 +701,6 @@ else
 fi
 echo PATH=$PATH
 export EPICS_BASE_BIN EPICS_EXT EPICS_EXT_LIB EPICS_EXT_BIN PATH LD_LIBRARY_PATH
-############# Fix bashrc (or friends)
-
-if ! grep "$BASH_ALIAS_EPICS" $BASHRC >/dev/null; then
-  echo updating $BASHRC
-  cat <<EOF >>$BASHRC
-#install-epics.sh
-if test -r ${BASH_ALIAS_EPICS}; then
-. ${BASH_ALIAS_EPICS}
-fi
-EOF
-fi
-
 #update .epics
 cat >${BASH_ALIAS_EPICS} <<EOF &&
 export EPICS_DEBUG=$EPICS_DEBUG
@@ -735,6 +724,7 @@ export PATH=\$PATH:\$EPICS_BASE_BIN:\$EPICS_EXT_BIN
 EOF
 
 $CP $BASH_ALIAS_EPICS $EPICS_ROOT/.epics.$EPICS_HOST_ARCH &&
+rm $BASH_ALIAS_EPICS &&
 ################
 
 (
