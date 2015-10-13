@@ -1,6 +1,6 @@
 #!/bin/sh
 
-EPICS_DOWNLOAD=$PWD/epicsMotionDemo
+EPICS_DOWNLOAD=$PWD/epics-for-Motion
 
 BASH_ALIAS_EPICS=/tmp/$$.epics
 
