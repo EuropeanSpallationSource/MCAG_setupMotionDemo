@@ -6,6 +6,6 @@ if ! test -d "$DIR"; then
   git clone https://github.com/EuropeanSpallationSource/$DIR.git &&
   (
     cd $DIR &&
-    git checkout 722926e3751d24c9ca1f3b9
+    git checkout 11eab43836a9376fd0
   )
 fi

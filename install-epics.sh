@@ -2,7 +2,7 @@
 
 EPICS_DOWNLOAD=$PWD/epics-for-Motion
 
-BASH_ALIAS_EPICS=/tmp/$$.epics
+BASH_ALIAS_EPICS=./.epics
 
 #Version of base
 EPICS_BASE_VER=3.15.2
@@ -12,7 +12,7 @@ EPICS_BASE_GIT_VER=R3.15.2
 
 
 #Version for synApps
-SYNAPPSVER=5_8
+#SYNAPPSVER=5_8
 
 #Version for ASYN
 #ASYNVER=4-21
@@ -724,7 +724,6 @@ export PATH=\$PATH:\$EPICS_BASE_BIN:\$EPICS_EXT_BIN
 EOF
 
 $CP $BASH_ALIAS_EPICS $EPICS_ROOT/.epics.$EPICS_HOST_ARCH &&
-rm $BASH_ALIAS_EPICS &&
 ################
 
 (
