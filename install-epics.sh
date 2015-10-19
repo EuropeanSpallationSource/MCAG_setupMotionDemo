@@ -20,7 +20,7 @@ ASYNVER=GIT
 ASYN_GIT_VER=R4-26
 
 MOTORVER=GIT
-MOTOR_GIT_VER=ac4f56b
+MOTOR_GIT_VER=204515c143c6b7ad55054
 #MOTOR_GIT_VER=master
 #MOTOR_GIT_VER=d5be8003ba
 #http://www.aps.anl.gov/bcda/synApps/motor/tar/motorR6-8-1.tar.gz
@@ -370,10 +370,10 @@ install_motor_X_Y ()
     cd $EPICS_ROOT &&
       if test "$MOTORVER" = GIT && test -n "$MOTOR_GIT_VER"; then
         if ! test -d $MOTOR_VER_X_Y; then
-					(
-            $FSUDO git clone https://github.com/tboegi/motor.git $MOTOR_VER_X_Y  &&
-						cd $MOTOR_VER_X_Y &&
-						$FSUDO git checkout $MOTOR_GIT_VER
+						(
+              $FSUDO git clone https://github.com/epics-modules/motor.git $MOTOR_VER_X_Y  &&
+              cd $MOTOR_VER_X_Y &&
+							$FSUDO git checkout $MOTOR_GIT_VER
 					)||
             ( $RM -rf $MOTOR_VER_X_Y; false )
         fi
