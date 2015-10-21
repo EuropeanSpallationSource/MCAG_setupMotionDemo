@@ -2,7 +2,7 @@
 
 EPICS_DOWNLOAD=$PWD/epics-for-Motion
 
-BASH_ALIAS_EPICS=./.epics
+BASH_ALIAS_EPICS=./.epics.$(hostname)
 
 #Version of base
 EPICS_BASE_VER=3.15.2
