@@ -408,10 +408,12 @@ install_motor_X_Y ()
         done
       }
     ) &&
-    (
-      cd $EPICS_ROOT/$MOTOR_VER_X_Y/motorApp &&
-      comment_out_in_file Makefile HytecSrc AerotechSrc
-    ) &&
+    if ! test "$MOTOR_GIT_VER" = master; then
+      (
+        cd $EPICS_ROOT/$MOTOR_VER_X_Y/motorApp &&
+        comment_out_in_file Makefile HytecSrc AerotechSrc
+      ) 
+    fi &&
     (
       echo run_make_in_dir $EPICS_ROOT/$MOTOR_VER_X_Y &&
       run_make_in_dir $EPICS_ROOT/$MOTOR_VER_X_Y &&
