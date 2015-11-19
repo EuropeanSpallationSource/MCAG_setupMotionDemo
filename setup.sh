@@ -1,5 +1,6 @@
 #!/bin/sh
 
+sudo ./install_raspberry.sh
 ./install-epics.sh
 DIR=m-epics-IcePAP
 if ! test -d "$DIR"; then	
