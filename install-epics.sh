@@ -20,7 +20,7 @@ ASYNVER=GIT
 ASYN_GIT_VER=R4-26
 
 MOTORVER=GIT
-MOTOR_GIT_VER=204515c143c6b7ad55054
+MOTOR_GIT_VER=R6-8-1
 #MOTOR_GIT_VER=master
 #MOTOR_GIT_VER=d5be8003ba
 #http://www.aps.anl.gov/bcda/synApps/motor/tar/motorR6-8-1.tar.gz
