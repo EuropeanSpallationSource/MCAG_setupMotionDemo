@@ -730,6 +730,7 @@ $CP $BASH_ALIAS_EPICS $EPICS_ROOT/.epics.$EPICS_HOST_ARCH &&
     test -r /usr/include/readline.h ||
     $APTGET readline-devel ||
     $APTGET libreadline-dev ||
+    $APTGET readline ||
     {
       echo >&2 can not install readline-devel
       exit 1
