@@ -1072,6 +1072,17 @@ if ! type re2c >/dev/null 2>/dev/null; then
   echo $APTGET re2c
   $APTGET re2c || install_re2c
 fi &&
+
+case "$EPICS_BASE_VER" in
+  3.15.*)
+  EPICS_MSI_VER=
+  export EPICS_MSI_VER
+  ;;
+  *)
+  ;;
+esac &&
+
+echo EPICS_MSI_VER=$EPICS_MSI_VER &&
 if test "$EPICS_MSI_VER"; then
   (
       cd $EPICS_ROOT &&
