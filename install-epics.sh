@@ -71,16 +71,34 @@ echo EPICS_ROOT=$EPICS_ROOT
 EPICS_ROOT=$(echo $EPICS_ROOT | sed -e "s%/[^/][^/]*/\.\./%/%")
 
 
+# Automatic install option for scripted installation
+INSTALL_EPICS=""
 
-echo EPICS_ROOT=$EPICS_ROOT
-echo Do you want to install EPICS in $EPICS_ROOT ? [y/N]
-read yesno
-case $yesno in
+while getopts ":e:" opt; do
+  case $opt in
+    e)
+      INSTALL_EPICS=$OPTARG
+      ;;
+    :)
+      echo "Option -e needs an argument, y for automatic installation of EPICS."
+      exit 0
+   esac
+done
+
+if [ -z "$INSTALL_EPICS" ]; then
+  echo EPICS_ROOT=$EPICS_ROOT
+  echo Do you want to install EPICS in $EPICS_ROOT ? [y/N]
+  read yesno
+  INSTALL_EPICS=$yesno
+fi
+
+case $INSTALL_EPICS in
   y|Y)
   ;;
   *)
   exit 0
 esac
+
 
 if $(echo "$EPICS_ROOT" | grep -q /usr/local); then
 	echo EPICS_ROOT=$EPICS_ROOT
