@@ -74,18 +74,18 @@ EPICS_ROOT=$(echo $EPICS_ROOT | sed -e "s%/[^/][^/]*/\.\./%/%")
 # Automatic install option for scripted installation
 INSTALL_EPICS=""
 
-while getopts ":e:" opt; do
+while getopts ":i:" opt; do
   case $opt in
     e)
       INSTALL_EPICS=$OPTARG
       ;;
     :)
-      echo "Option -e needs an argument, y for automatic installation of EPICS."
-      exit 0
+      echo "Option -i needs an argument (y for automatic installation of EPICS, n for skipping installation)."
+      exit 1
    esac
 done
 
-if [ -z "$INSTALL_EPICS" ]; then
+if test -z "$INSTALL_EPICS"; then
   echo EPICS_ROOT=$EPICS_ROOT
   echo Do you want to install EPICS in $EPICS_ROOT ? [y/N]
   read yesno
