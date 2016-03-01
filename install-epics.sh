@@ -76,7 +76,7 @@ INSTALL_EPICS=""
 
 while getopts ":i:" opt; do
   case $opt in
-    e)
+    i)
       INSTALL_EPICS=$OPTARG
       ;;
     :)
