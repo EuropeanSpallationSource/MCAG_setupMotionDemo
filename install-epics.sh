@@ -2,7 +2,10 @@
 
 EPICS_DOWNLOAD=$PWD/epics-for-Motion
 
-BASH_ALIAS_EPICS=./.epics.$(hostname)
+uname_s=$(uname -s 2>/dev/null || echo unknown)
+uname_m=$(uname -m 2>/dev/null || echo unknown)
+
+BASH_ALIAS_EPICS=./.epics.$(hostname).$uname_s.$uname_m
 
 #Version of base
 EPICS_BASE_VER=3.15.2
@@ -17,10 +20,10 @@ EPICS_BASE_GIT_VER=R3.15.2
 #Version for ASYN
 #ASYNVER=4-21
 ASYNVER=GIT
-ASYN_GIT_VER=R4-26
+ASYN_GIT_VER=R4-28
 
 MOTORVER=GIT
-MOTOR_GIT_VER=R6-8-1
+MOTOR_GIT_VER=60a2298b225583f5fa6a6576f7088
 #MOTOR_GIT_VER=master
 #MOTOR_GIT_VER=d5be8003ba
 #http://www.aps.anl.gov/bcda/synApps/motor/tar/motorR6-8-1.tar.gz
