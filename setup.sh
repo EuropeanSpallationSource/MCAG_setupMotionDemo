@@ -5,7 +5,7 @@
 #    sudo ./install_raspberry.sh
 #  fi
 #fi
-./install-epics.sh
+./install-epics.sh "$@"
 DIR=MCAG_Base_Project
 if ! test -d "$DIR"; then	
   git clone https://github.com/EuropeanSpallationSource/$DIR.git &&
