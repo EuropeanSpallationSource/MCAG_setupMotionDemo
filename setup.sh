@@ -1,6 +1,6 @@
 #!/bin/sh
 
-./install-epics.sh
+./install-epics.sh "$@"
 DIR=m-epics-IcePAP
 if ! test -d "$DIR"; then	
   git clone https://github.com/EuropeanSpallationSource/$DIR.git &&
