@@ -1,8 +1,10 @@
 #!/bin/sh
 
-if type apt-get; then
-    sudo ./install_raspberry.sh
-fi
+#if type apt-get >/dev/null; then
+#  if $(uname -m | grep armv6 >/dev/null); then
+#    sudo ./install_raspberry.sh
+#  fi
+#fi
 ./install-epics.sh
 DIR=MCAG_Base_Project
 if ! test -d "$DIR"; then	
