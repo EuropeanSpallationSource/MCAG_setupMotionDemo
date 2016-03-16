@@ -680,24 +680,10 @@ comment_out_in_file()
   cd $EPICS_ROOT &&
 
   if ! test -d base-$EPICS_BASE_VER; then
-    #if test "$EPICS_BASE_VER" = GIT; then
-    if /bin/true; then
-      git clone https://github.com/epics-base/epics-base.git base-$EPICS_BASE_VER &&
-      (
-        cd base-$EPICS_BASE_VER && git checkout $EPICS_BASE_GIT_VER
-      )
-    else
-      if ! test -f base${SEP}${EPICS_BASE_VER}.tar.gz; then
-        wget_or_curl http://www.aps.anl.gov/epics/download/base/base${SEP}${EPICS_BASE_VER}.tar.gz base${SEP}${EPICS_BASE_VER}.tar.gz
-      fi
-      if ! test -d base-$EPICS_BASE_VER; then
-        tar xzf base${SEP}${EPICS_BASE_VER}.tar.gz || {
-          echo >&2 can not tar xzf base${SEP}${EPICS_BASE_VER}.tar.gz
-          $RM -rf base-$EPICS_BASE_VER
-          exit 1
-        }
-      fi
-    fi
+    git clone https://github.com/epics-base/epics-base.git base-$EPICS_BASE_VER &&
+    (
+      cd base-$EPICS_BASE_VER && git checkout $EPICS_BASE_GIT_VER
+    )
   fi
 ) || exit 1
 
