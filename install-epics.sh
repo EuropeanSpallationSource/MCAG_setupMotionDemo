@@ -99,7 +99,7 @@ case $INSTALL_EPICS in
   y|Y)
   ;;
   *)
-  exit 0
+  exit 1
 esac
 
 

@@ -1,12 +1,8 @@
 #!/bin/sh
 
-#if type apt-get >/dev/null; then
-#  if $(uname -m | grep armv6 >/dev/null); then
-#    sudo ./install_raspberry.sh
-#  fi
-#fi
-./install-epics.sh "$@"
 DIR=MCAG_Base_Project
+
+./install-epics.sh "$@" &&
 if ! test -d "$DIR"; then	
   git clone https://github.com/EuropeanSpallationSource/$DIR.git &&
   (
