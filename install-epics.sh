@@ -20,7 +20,7 @@ ASYNVER=GIT
 ASYN_GIT_VER=R4-26
 
 MOTORVER=GIT
-MOTOR_GIT_VER=204515c143c6b7ad55054
+MOTOR_GIT_VER=41cd23961558e04d1133fc
 #MOTOR_GIT_VER=master
 #MOTOR_GIT_VER=d5be8003ba
 #http://www.aps.anl.gov/bcda/synApps/motor/tar/motorR6-8-1.tar.gz
@@ -273,7 +273,7 @@ run_make_in_dir()
   echo cd $dir &&
   (
     cd $dir &&
-    $FSUDO make || {
+    $FSUDO make -f Makefile || {
     echo >&2 PWD=$PWD Can not make
     exit 1
   }
@@ -371,7 +371,7 @@ install_motor_X_Y ()
       if test "$MOTORVER" = GIT && test -n "$MOTOR_GIT_VER"; then
         if ! test -d $MOTOR_VER_X_Y; then
 						(
-              $FSUDO git clone https://github.com/epics-modules/motor.git $MOTOR_VER_X_Y  &&
+              $FSUDO git clone https://github.com/EuropeanSpallationSource/motor.git/ $MOTOR_VER_X_Y  &&
               cd $MOTOR_VER_X_Y &&
 							$FSUDO git checkout $MOTOR_GIT_VER
 					)||
@@ -679,7 +679,16 @@ comment_out_in_file()
         }
       fi
     fi
-  fi
+  fi &&
+  (
+    # Don't build the perl bindings, compile error under Centos
+    cd base-$EPICS_BASE_VER/src &&
+    if ! grep "#DIRS += ca/client/perl" Makefile >/dev/null; then
+      cp Makefile Makefile.orig &&
+      sed -e "s!DIRS += ca/client/perl!#DIRS += ca/client/perl!" <Makefile.orig >Makefile
+    fi
+  )
+
 ) || exit 1
 
 #Need to set the softlink now
