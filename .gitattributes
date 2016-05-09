@@ -1,0 +1,12 @@
+#Overall rule: No crlf conversion
+* -crlf
+#Overwrite the general rule for known files/extensions
+#Try to keep the order alphabetically
+.gitignore           text
+.gitattributes 	     text
+README.md 	     text
+
+*.pdf 		     -text
+*.py  		     text eol=lf
+*.sh  		     text eol=lf
+*.txt 		     text

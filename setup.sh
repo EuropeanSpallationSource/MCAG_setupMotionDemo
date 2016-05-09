@@ -1,11 +1,12 @@
 #!/bin/sh
 
-./install-epics.sh
-DIR=m-epics-IcePAP
+DIR=MCAG_Base_Project
+
+./install-epics.sh "$@" &&
 if ! test -d "$DIR"; then	
   git clone https://github.com/EuropeanSpallationSource/$DIR.git &&
   (
     cd $DIR &&
-    git checkout 151013_1053_debug_CSS
+      git checkout f14022e871acd3bf837e155fe8b7f0ed0
   )
 fi

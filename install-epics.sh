@@ -2,7 +2,10 @@
 
 EPICS_DOWNLOAD=$PWD/epics-for-Motion
 
-BASH_ALIAS_EPICS=./.epics.$(hostname)
+uname_s=$(uname -s 2>/dev/null || echo unknown)
+uname_m=$(uname -m 2>/dev/null || echo unknown)
+
+BASH_ALIAS_EPICS=./.epics.$(hostname).$uname_s.$uname_m
 
 #Version of base
 EPICS_BASE_VER=3.15.2
@@ -17,7 +20,7 @@ EPICS_BASE_GIT_VER=R3.15.2
 #Version for ASYN
 #ASYNVER=4-21
 ASYNVER=GIT
-ASYN_GIT_VER=R4-26
+ASYN_GIT_VER=R4-28
 
 MOTORVER=GIT
 MOTOR_GIT_VER=41cd23961558e04d1133fc
@@ -71,16 +74,34 @@ echo EPICS_ROOT=$EPICS_ROOT
 EPICS_ROOT=$(echo $EPICS_ROOT | sed -e "s%/[^/][^/]*/\.\./%/%")
 
 
+# Automatic install option for scripted installation
+INSTALL_EPICS=""
 
-echo EPICS_ROOT=$EPICS_ROOT
-echo Do you want to install EPICS in $EPICS_ROOT ? [y/N]
-read yesno
-case $yesno in
+while getopts ":i:" opt; do
+  case $opt in
+    i)
+      INSTALL_EPICS=$OPTARG
+      ;;
+    :)
+      echo "Option -i needs an argument (y for automatic installation of EPICS, n for skipping installation)."
+      exit 1
+   esac
+done
+
+if test -z "$INSTALL_EPICS"; then
+  echo EPICS_ROOT=$EPICS_ROOT
+  echo Do you want to install EPICS in $EPICS_ROOT ? [y/N]
+  read yesno
+  INSTALL_EPICS=$yesno
+fi
+
+case $INSTALL_EPICS in
   y|Y)
   ;;
   *)
-  exit 0
+  exit 1
 esac
+
 
 if $(echo "$EPICS_ROOT" | grep -q /usr/local); then
 	echo EPICS_ROOT=$EPICS_ROOT
@@ -661,34 +682,11 @@ comment_out_in_file()
   cd $EPICS_ROOT &&
 
   if ! test -d base-$EPICS_BASE_VER; then
-    #if test "$EPICS_BASE_VER" = GIT; then
-    if /bin/true; then
-      git clone https://github.com/epics-base/epics-base.git base-$EPICS_BASE_VER &&
-      (
-        cd base-$EPICS_BASE_VER && git checkout $EPICS_BASE_GIT_VER
-      )
-    else
-      if ! test -f base${SEP}${EPICS_BASE_VER}.tar.gz; then
-        wget_or_curl http://www.aps.anl.gov/epics/download/base/base${SEP}${EPICS_BASE_VER}.tar.gz base${SEP}${EPICS_BASE_VER}.tar.gz
-      fi
-      if ! test -d base-$EPICS_BASE_VER; then
-        tar xzf base${SEP}${EPICS_BASE_VER}.tar.gz || {
-          echo >&2 can not tar xzf base${SEP}${EPICS_BASE_VER}.tar.gz
-          $RM -rf base-$EPICS_BASE_VER
-          exit 1
-        }
-      fi
-    fi
-  fi &&
-  (
-    # Don't build the perl bindings, compile error under Centos
-    cd base-$EPICS_BASE_VER/src &&
-    if ! grep "#DIRS += ca/client/perl" Makefile >/dev/null; then
-      cp Makefile Makefile.orig &&
-      sed -e "s!DIRS += ca/client/perl!#DIRS += ca/client/perl!" <Makefile.orig >Makefile
-    fi
-  )
-
+    git clone https://github.com/epics-base/epics-base.git base-$EPICS_BASE_VER &&
+    (
+      cd base-$EPICS_BASE_VER && git checkout $EPICS_BASE_GIT_VER
+    )
+  fi
 ) || exit 1
 
 #Need to set the softlink now
