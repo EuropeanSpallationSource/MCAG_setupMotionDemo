@@ -686,7 +686,15 @@ comment_out_in_file()
     (
       cd base-$EPICS_BASE_VER && git checkout $EPICS_BASE_GIT_VER
     )
-  fi
+  fi  &&
+  (
+    # Don't build the perl bindings, compile error under Centos
+    cd base-$EPICS_BASE_VER/src &&
+    if ! grep "#DIRS += ca/client/perl" Makefile >/dev/null; then
+      cp Makefile Makefile.orig &&
+      sed -e "s!DIRS += ca/client/perl!#DIRS += ca/client/perl!" <Makefile.orig >Makefile
+    fi
+  )
 ) || exit 1
 
 #Need to set the softlink now
