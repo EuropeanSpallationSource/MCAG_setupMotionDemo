@@ -665,36 +665,28 @@ comment_out_in_file()
     fi
   done
 }
-
-
+cd $EPICS_ROOT &&
+if ! test -d base-$EPICS_BASE_VER; then
+  git clone https://github.com/epics-base/epics-base.git base-$EPICS_BASE_VER &&
+  (
+    cd base-$EPICS_BASE_VER && git checkout $EPICS_BASE_GIT_VER
+  )
+fi  &&
 (
   case "$EPICS_BASE_VER" in
     3.15.1|3.15.2)
-    SEP="-"
-    ;;
-    3.14.12.*)
-    SEP=R
+    (
+      # Don't build the perl bindings, compile error under Centos
+      cd base-$EPICS_BASE_VER/src &&
+      if ! grep "#DIRS += ca/client/perl" Makefile >/dev/null; then
+        cp Makefile Makefile.orig &&
+        sed -e "s!DIRS += ca/client/perl!#DIRS += ca/client/perl!" <Makefile.orig >Makefile
+      fi
+    )
     ;;
     *)
-    exit 0
+    ;;
   esac
-
-  cd $EPICS_ROOT &&
-
-  if ! test -d base-$EPICS_BASE_VER; then
-    git clone https://github.com/epics-base/epics-base.git base-$EPICS_BASE_VER &&
-    (
-      cd base-$EPICS_BASE_VER && git checkout $EPICS_BASE_GIT_VER
-    )
-  fi  &&
-  (
-    # Don't build the perl bindings, compile error under Centos
-    cd base-$EPICS_BASE_VER/src &&
-    if ! grep "#DIRS += ca/client/perl" Makefile >/dev/null; then
-      cp Makefile Makefile.orig &&
-      sed -e "s!DIRS += ca/client/perl!#DIRS += ca/client/perl!" <Makefile.orig >Makefile
-    fi
-  )
 ) || exit 1
 
 #Need to set the softlink now
