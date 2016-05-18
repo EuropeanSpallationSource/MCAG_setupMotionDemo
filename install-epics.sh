@@ -23,7 +23,7 @@ ASYNVER=GIT
 ASYN_GIT_VER=R4-28
 
 MOTORVER=GIT
-MOTOR_GIT_VER=7eeeaeeee74cb1fc271686ca4e9c088c
+MOTOR_GIT_VER=43746ee3f51fa2be2578bb4ddb2
 #MOTOR_GIT_VER=master
 #MOTOR_GIT_VER=d5be8003ba
 #http://www.aps.anl.gov/bcda/synApps/motor/tar/motorR6-8-1.tar.gz
@@ -394,7 +394,7 @@ install_motor_X_Y ()
 						(
               $FSUDO git clone https://github.com/EuropeanSpallationSource/motor.git/ $MOTOR_VER_X_Y  &&
               cd $MOTOR_VER_X_Y &&
-							$FSUDO git checkout $MOTOR_GIT_VER
+	      $FSUDO git checkout $MOTOR_GIT_VER
 					)||
             ( $RM -rf $MOTOR_VER_X_Y; false )
         fi
@@ -733,6 +733,7 @@ export PATH=\$PATH:\$EPICS_BASE_BIN:\$EPICS_EXT_BIN
 EOF
 
 $CP $BASH_ALIAS_EPICS $EPICS_ROOT/.epics.$EPICS_HOST_ARCH &&
+$CP $BASH_ALIAS_EPICS ../.. &&
 ################
 
 (
