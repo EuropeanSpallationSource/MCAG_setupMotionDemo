@@ -737,6 +737,7 @@ $CP $BASH_ALIAS_EPICS ../.. &&
 ################
 
 (
+  addpacketifneeded make &&
   # We need gcc and g++: gcc-g++ under Scientifc Linux
   if ! type g++ >/dev/null 2>/dev/null; then
     echo $APTGET gcc-c++
