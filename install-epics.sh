@@ -10,8 +10,7 @@ BASH_ALIAS_EPICS=./.epics.$(hostname).$uname_s.$uname_m
 #Version of base
 EPICS_BASE_VER=3.15.2
 BASE_VER=GIT
-#EPICS_BASE_GIT_VER=R3.14.12.5
-EPICS_BASE_GIT_VER=R3.15.2
+EPICS_BASE_GIT_VER=R${EPICS_BASE_VER}
 
 
 #Version for synApps
@@ -22,12 +21,8 @@ EPICS_BASE_GIT_VER=R3.15.2
 ASYNVER=GIT
 ASYN_GIT_VER=R4-28
 
-MOTORVER=GIT
-MOTOR_GIT_VER=43746ee3f51fa2be2578bb4ddb2
-#MOTOR_GIT_VER=master
-#MOTOR_GIT_VER=d5be8003ba
-#http://www.aps.anl.gov/bcda/synApps/motor/tar/motorR6-8-1.tar.gz
-#http://www.aps.anl.gov/bcda/synApps/motor/tar/motorR6-9.tar.gz
+AXISVER=GIT
+AXIS_GIT_VER=master
 
 #msi
 EPICS_MSI_VER=msi1-5
@@ -59,9 +54,9 @@ fi
 if test -n "$SYNAPPSVER"; then
   EPICS_ROOT=${EPICS_ROOT}_SYNAPPS_${SYNAPPSVER}
 fi
-if test -n "$MOTORVER"; then
-  MOTOR_VER_X_Y=motorR$MOTORVER$MOTOR_GIT_VER
-  EPICS_ROOT=${EPICS_ROOT}_MOTOR_${MOTORVER}_${MOTOR_GIT_VER}
+if test -n "$AXISVER"; then
+  AXIS_VER_X_Y=axisR$AXISVER$AXIS_GIT_VER
+  EPICS_ROOT=${EPICS_ROOT}_AXIS_${AXISVER}_${AXIS_GIT_VER}
 fi
 
 if test "$EPICS_DEBUG" = y; then
@@ -303,7 +298,7 @@ run_make_in_dir()
 
 install_asyn_ver()
 {
-  echo install_motor_from_synapps
+  echo install_axis_from_synapps
   asyndir="$1"/
   cd $EPICS_ROOT/modules &&
   if test -L asyn; then
@@ -320,11 +315,11 @@ install_asyn_ver()
   }
 }
 
-patch_motor_h()
+patch_axis_h()
 {
   (
     cd "$1" &&
-    if grep "epicsEndian.h" motor.h >/dev/null; then
+    if grep "epicsEndian.h" axis.h >/dev/null; then
       echo PWD=$PWD patch motor.h not needed &&
       return
     fi &&
@@ -386,24 +381,27 @@ EOF
 install_motor_X_Y ()
 {
   echo install_motor_X_Y
-  create_soft_x_y $EPICS_ROOT/modules ../$MOTOR_VER_X_Y/ motor
+  create_soft_x_y $EPICS_ROOT/modules ../$AXIS_VER_X_Y/ motor
   (
     cd $EPICS_ROOT &&
-      if test "$MOTORVER" = GIT && test -n "$MOTOR_GIT_VER"; then
-        if ! test -d $MOTOR_VER_X_Y; then
+      if test "$AXISVER" = GIT && test -n "$AXIS_GIT_VER"; then
+        if ! test -d $AXIS_VER_X_Y; then
 						(
-              $FSUDO git clone https://github.com/EuropeanSpallationSource/motor.git/ $MOTOR_VER_X_Y  &&
-              cd $MOTOR_VER_X_Y &&
-	      $FSUDO git checkout $MOTOR_GIT_VER
+              #$FSUDO git clone https://github.com/EuropeanSpallationSource/motor.git/ $AXIS_VER_X_Y  &&
+							#git@github.com:EPICS-motor-wg/axis.git $AXIS_VER_X_Y &&
+							#$FSUDO git clone https://github.com/EuropeanSpallationSource/motor.git/ $AXIS_VER_X_Y  &&
+							$FSUDO git clone  https://github.com/EPICS-motor-wg/axis.git $AXIS_VER_X_Y &&
+              cd $AXIS_VER_X_Y &&
+	      $FSUDO git checkout $AXIS_GIT_VER
 					)||
-            ( $RM -rf $MOTOR_VER_X_Y; false )
+            ( $RM -rf $AXIS_VER_X_Y; false )
         fi
       else
-        if ! test -f $MOTOR_VER_X_Y.tar.gz; then
-          wget_or_curl http://www.aps.anl.gov/bcda/synApps/motor/tar/$MOTOR_VER_X_Y.tar.gz $MOTOR_VER_X_Y.tar.gz
+        if ! test -f $AXIS_VER_X_Y.tar.gz; then
+          wget_or_curl http://www.aps.anl.gov/bcda/synApps/motor/tar/$AXIS_VER_X_Y.tar.gz $AXIS_VER_X_Y.tar.gz
         fi
-        if ! test -d $MOTOR_VER_X_Y; then
-          tar xzvf $MOTOR_VER_X_Y.tar.gz
+        if ! test -d $AXIS_VER_X_Y; then
+          tar xzvf $AXIS_VER_X_Y.tar.gz
         fi
       fi
   ) &&
@@ -420,27 +418,27 @@ install_motor_X_Y ()
             )
       fi
   ) &&
-  if test -n "$MOTORVER"; then
+  if test -n "$AXISVER"; then
     (
-      cd $EPICS_ROOT/$MOTOR_VER_X_Y/configure && {
+      cd $EPICS_ROOT/$AXIS_VER_X_Y/configure && {
         for f in $(find . -name "RELEASE*" ); do
           echo f=$f
           fix_epics_base $f
         done
       }
     ) &&
-    if ! test "$MOTOR_GIT_VER" = master; then
+    if ! test "$AXIS_GIT_VER" = master; then
       (
-        cd $EPICS_ROOT/$MOTOR_VER_X_Y/motorApp &&
+        cd $EPICS_ROOT/$AXIS_VER_X_Y/motorApp &&
         comment_out_in_file Makefile HytecSrc AerotechSrc
       ) 
     fi &&
     (
-      echo run_make_in_dir $EPICS_ROOT/$MOTOR_VER_X_Y &&
-      run_make_in_dir $EPICS_ROOT/$MOTOR_VER_X_Y &&
-      echo done run_make_in_dir $EPICS_ROOT/$MOTOR_VER_X_Y
+      echo run_make_in_dir $EPICS_ROOT/$AXIS_VER_X_Y &&
+      run_make_in_dir $EPICS_ROOT/$AXIS_VER_X_Y &&
+      echo done run_make_in_dir $EPICS_ROOT/$AXIS_VER_X_Y
     ) || {
-      echo >&2 failed $MOTOR_VER_X_Y
+      echo >&2 failed $AXIS_VER_X_Y
       exit 1
     }
   fi
@@ -1131,7 +1129,7 @@ if test -n "$SYNAPPS_VER_X_Y"; then
   }
 fi
 
-if test -z "$MOTORVER"; then
+if test -z "$AXISVER"; then
   patch_motor_h $EPICS_ROOT/$SYNAPPS_VER_X_Y/support/motor-*/motorApp/MotorSrc &&
   comment_out_in_file $EPICS_ROOT/$SYNAPPS_VER_X_Y/support/motor-*/motorApp/Makefile HytecSrc AerotechSrc &&
   run_make_in_dir $EPICS_ROOT/$SYNAPPS_VER_X_Y/support/motor-*/motorApp || {
