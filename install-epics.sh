@@ -55,8 +55,8 @@ if test -n "$SYNAPPSVER"; then
   EPICS_ROOT=${EPICS_ROOT}_SYNAPPS_${SYNAPPSVER}
 fi
 if test -n "$AXISVER"; then
-  AXIS_VER_X_Y=axisR$AXISVER$AXIS_GIT_VER
-  EPICS_ROOT=${EPICS_ROOT}_AXIS_${AXISVER}_${AXIS_GIT_VER}
+  AXIS_VER_X_Y=axis
+	EPICS_ROOT=${EPICS_ROOT}_axis
 fi
 
 if test "$EPICS_DEBUG" = y; then
@@ -315,94 +315,21 @@ install_asyn_ver()
   }
 }
 
-patch_axis_h()
+install_axis_X_Y ()
 {
-  (
-    cd "$1" &&
-    if grep "epicsEndian.h" axis.h >/dev/null; then
-      echo PWD=$PWD patch motor.h not needed &&
-      return
-    fi &&
-    echo PWD=$PWD patch motor.h &&
-    if ! test -e motor.h.original; then
-      $CP motor.h motor.h.original
-    fi &&
-    $CP motor.h.original motor.h &&
-    case $PWD in
-      *motor-6-7*)
-      cat <<EOF >motor.patch
-diff --git a/motorApp/MotorSrc/motor.h b/motorApp/MotorSrc/motor.h
---- a/motorApp/MotorSrc/motor.h
-+++ b/motorApp/MotorSrc/motor.h
-63a64
-> #include <epicsEndian.h>
-140c141
-< #elif ($CPU == PPC604) || ($CPU == PPC603) || ($CPU==PPC85XX) || ($CPU == MC68040) || ($CPU == PPC32)
----
-> #elif defined($CPU) && (($CPU == PPC604) || ($CPU == PPC603) || ($CPU == PPC85XX) || ($CPU == MC68040) || ($CPU == PPC32))
-141a143,148
-> #elif defined(__GNUC__)
->     #if (EPICS_BYTE_ORDER == EPICS_ENDIAN_LITTLE)
->         #define LSB_First (TRUE)
->     #else
->         #define MSB_First (TRUE)
->     #endif
-EOF
-      ;;
-      *motor-6-8*)
-      cat <<EOF >motor.patch
-diff --git a/motorApp/MotorSrc/motor.h b/motorApp/MotorSrc/motor.h
---- a/motorApp/MotorSrc/motor.h
-+++ b/motorApp/MotorSrc/motor.h
-63a64
-> #include <epicsEndian.h>
-140c141
-< #elif ($CPU == PPC604) || ($CPU == PPC603) || ($CPU == PPC85XX) || ($CPU == MC68040) || ($CPU == PPC32)
----
-> #elif defined($CPU) && (($CPU == PPC604) || ($CPU == PPC603) || ($CPU == PPC85XX) || ($CPU == MC68040) || ($CPU == PPC32))
-141a143,148
-> #elif defined(__GNUC__)
->     #if (EPICS_BYTE_ORDER == EPICS_ENDIAN_LITTLE)
->         #define LSB_First (TRUE)
->     #else
->         #define MSB_First (TRUE)
->     #endif
-EOF
-      ;;
-      *)
-      echo >&2 "Can not patch motor.h, only motor 6.7 or 6.8 is supported"
-      exit 1
-    esac &&
-    patch <motor.patch
-  )
-}
-
-
-install_motor_X_Y ()
-{
-  echo install_motor_X_Y
-  create_soft_x_y $EPICS_ROOT/modules ../$AXIS_VER_X_Y/ motor
+  echo install_axis_X_Y
+	. $EPICS_ROOT/.epics.$EPICS_HOST_ARCH || {
+		echo >&2 "can include $EPICS_ROOT/.epics.$EPICS_HOST_ARCH"
+		exit 1
+	}
+  create_soft_x_y $EPICS_ROOT/modules ../$AXIS_VER_X_Y/ axis
   (
     cd $EPICS_ROOT &&
-      if test "$AXISVER" = GIT && test -n "$AXIS_GIT_VER"; then
-        if ! test -d $AXIS_VER_X_Y; then
-						(
-              #$FSUDO git clone https://github.com/EuropeanSpallationSource/motor.git/ $AXIS_VER_X_Y  &&
-							#git@github.com:EPICS-motor-wg/axis.git $AXIS_VER_X_Y &&
-							#$FSUDO git clone https://github.com/EuropeanSpallationSource/motor.git/ $AXIS_VER_X_Y  &&
-							$FSUDO git clone  https://github.com/EPICS-motor-wg/axis.git $AXIS_VER_X_Y &&
-              cd $AXIS_VER_X_Y &&
-	      $FSUDO git checkout $AXIS_GIT_VER
-					)||
-            ( $RM -rf $AXIS_VER_X_Y; false )
-        fi
-      else
-        if ! test -f $AXIS_VER_X_Y.tar.gz; then
-          wget_or_curl http://www.aps.anl.gov/bcda/synApps/motor/tar/$AXIS_VER_X_Y.tar.gz $AXIS_VER_X_Y.tar.gz
-        fi
-        if ! test -d $AXIS_VER_X_Y; then
-          tar xzvf $AXIS_VER_X_Y.tar.gz
-        fi
+      if ! test -d $AXIS_VER_X_Y; then
+				(
+					$FSUDO git clone  --branch $AXIS_GIT_VER https://github.com/EPICS-motor-wg/axis.git $AXIS_VER_X_Y
+				)||
+          ( $RM -rf $AXIS_VER_X_Y; false )
       fi
   ) &&
   (
@@ -427,12 +354,6 @@ install_motor_X_Y ()
         done
       }
     ) &&
-    if ! test "$AXIS_GIT_VER" = master; then
-      (
-        cd $EPICS_ROOT/$AXIS_VER_X_Y/motorApp &&
-        comment_out_in_file Makefile HytecSrc AerotechSrc
-      ) 
-    fi &&
     (
       echo run_make_in_dir $EPICS_ROOT/$AXIS_VER_X_Y &&
       run_make_in_dir $EPICS_ROOT/$AXIS_VER_X_Y &&
@@ -728,7 +649,7 @@ else
   export LD_LIBRARY_PATH=\$EPICS_EXT_LIB
 fi
 export PATH=\$PATH:\$EPICS_BASE_BIN:\$EPICS_EXT_BIN
-export SUPPORT=\${EPICS_BASE}/support
+export SUPPORT=\${EPICS_ROOT}/support
 export ASYN=\${EPICS_BASE}/asyn
 export BUSY=$(SUPPORT)/busy-1-6
 EOF
@@ -1141,7 +1062,7 @@ if test -z "$AXISVER"; then
   }
   install_motor_from_synapps
 else
-  install_motor_X_Y
+  install_axis_X_Y
 fi &&
 install_streamdevice &&
 echo install $EPICS_ROOT OK || {
