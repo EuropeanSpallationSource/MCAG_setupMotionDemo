@@ -728,6 +728,9 @@ else
   export LD_LIBRARY_PATH=\$EPICS_EXT_LIB
 fi
 export PATH=\$PATH:\$EPICS_BASE_BIN:\$EPICS_EXT_BIN
+export SUPPORT=\${EPICS_BASE}/support
+export ASYN=\${EPICS_BASE}/asyn
+export BUSY=$(SUPPORT)/busy-1-6
 EOF
 
 $CP $BASH_ALIAS_EPICS $EPICS_ROOT/.epics.$EPICS_HOST_ARCH &&
