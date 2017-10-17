@@ -13,23 +13,13 @@ BASE_VER=GIT
 EPICS_BASE_GIT_VER=R${EPICS_BASE_VER}
 
 
-#Version for synApps
-#SYNAPPSVER=5_8
-
 #Version for ASYN
 #ASYNVER=4-21
-ASYNVER=GIT
-ASYN_GIT_VER=R4-28
+ASYN_GIT_VER=R4-31
 
-AXISVER=GIT
-AXIS_GIT_VER=master
+#AXIS_GIT_VER=master
+AXIS_GIT_VER=torsten/171017-move-doc-submodules
 
-#msi
-EPICS_MSI_VER=msi1-5
-
-if test -n "$SYNAPPSVER"; then
-  SYNAPPS_VER_X_Y=synApps_$SYNAPPSVER
-fi
 
 # Debug version for e.g. kdbg
 EPICS_DEBUG=n
@@ -47,12 +37,9 @@ EPICS_ROOT=$EPICS_DOWNLOAD/EPICS_BASE_${EPICS_BASE_VER}
 if test -n "$BASE_VER"; then
   EPICS_ROOT=${EPICS_ROOT}_GIT
 fi
-if test -n "$ASYNVER"; then
-  ASYN_VER_X_Y=asyn$ASYNVER
-  EPICS_ROOT=${EPICS_ROOT}_ASYN_${ASYNVER}
-fi
-if test -n "$SYNAPPSVER"; then
-  EPICS_ROOT=${EPICS_ROOT}_SYNAPPS_${SYNAPPSVER}
+if test -n "$ASYN_GIT_VER"; then
+  ASYN_VER_X_Y=asyn$ASYN_GIT_VER
+  EPICS_ROOT=${EPICS_ROOT}_ASYN_${ASYN_GIT_VER}
 fi
 if test -n "$AXISVER"; then
   AXIS_VER_X_Y=axis
@@ -113,34 +100,6 @@ MV="$FSUDO mv"
 RM="$FSUDO rm"
 
 export CP FSUDO LN MKDIR MV RM SUDO
-
-case "$SYNAPPS_VER_X_Y" in
-  synApps_5_6)
-  MODSTOBEREMOVED="ALLEN_BRADLEY DAC128V IP330 IPUNIDIG LOVE IP VAC SOFTGLUE QUADEM DELAYGEN CAMAC VME AREA_DETECTOR DXP"
-  MODSFROMMAKEFILE='ADSupport NDPlugin simDetector netCDF dxp "xxx_Common_LIBS += ip"'
-  ;;
-  synApps_5_7)
-  MODSTOBEREMOVED="ALLEN_BRADLEY AREA_DETECTOR AUTOSAVE CAMAC DAC128V DXP DELAYGEN IP IP330 IPUNIDIG LOVE MCA MEASCOMP OPTICS QUADEM SOFTGLUE STD SNCSEQ VAC VME"
-  MODSFROMMAKEFILE='ADSupport NDPlugin simDetector netCDF dxp "xxx_Common_LIBS += ip"'
-  ;;
-  synApps_5_8)
-  MODSTOBEREMOVED="ALLEN_BRADLEY AREA_DETECTOR AUTOSAVE CAMAC DAC128V DXP DELAYGEN IP IP330 IPUNIDIG LOVE MCA MEASCOMP OPTICS QUADEM SOFTGLUE STD SNCSEQ VAC VME"
-  MODSFROMMAKEFILE='ADSupport NDPlugin simDetector dxp'
-  ;;
-  '')
-  ;;
-  *)
-  echo >&2 "Invalid version for synapps $SYNAPPS_VER_X_Y"
-  exit 1
-  ;;
-esac
-
-#extensions top
-EPICS_EXTENSIONS_TOP_VER=extensionsTop_20120904
-
-
-#StreamDevice, later version than synApps
-#STREAMDEVICEVER=StreamDevice-2-6
 
 export EPICS_ROOT EPICS_BASE EPICS_MODULES EPICS_BASE_VER EPICS_ROOT EPICS_DEBUG
 export EPICS_EXT=${EPICS_ROOT}/extensions
@@ -327,22 +286,9 @@ install_axis_X_Y ()
     cd $EPICS_ROOT &&
       if ! test -d $AXIS_VER_X_Y; then
 				(
-					$FSUDO git clone  --branch $AXIS_GIT_VER https://github.com/EPICS-motor-wg/axis.git $AXIS_VER_X_Y
+					$FSUDO git clone --recursive --branch $AXIS_GIT_VER https://github.com/EPICS-motor-wg/axis.git $AXIS_VER_X_Y
 				)||
           ( $RM -rf $AXIS_VER_X_Y; false )
-      fi
-  ) &&
-  (
-    # Need to fix epics base for synapss already here,
-    # (if the dir already exists)
-    path=$EPICS_ROOT/$SYNAPPS_VER_X_Y/support/configure &&
-      if test -d $path; then
-          echo cd $path &&
-            cd $path &&
-            (
-              fix_epics_base EPICS_BASE.$EPICS_HOST_ARCH &&
-              fix_epics_base SUPPORT.$EPICS_HOST_ARCH
-            )
       fi
   ) &&
   if test -n "$AXISVER"; then
@@ -363,61 +309,6 @@ install_axis_X_Y ()
       exit 1
     }
   fi
-}
-
-
-install_motor_from_synapps()
-{
-  echo install_motor_from_synapps
-  cd $EPICS_ROOT/modules &&
-  if test -e motor; then
-    echo $RM -rf motor &&
-    $RM -rf motor
-  fi &&
-  $MKDIR -p motor &&
-  cd motor &&
-  motordevver=$(echo ../../$SYNAPPS_VER_X_Y/support/motor-*) &&
-  echo motordevver=$motordevver &&
-  for f in src dbd Db lib include; do
-    if test -e $f; then
-      echo $RM -rf $f &&
-      $RM -rf $f
-    fi
-  done &&
-  (
-    $MKDIR dbd &&
-    cd dbd &&
-    $RM -rf * &&
-    for mdbd in $(find ../../../$SYNAPPS_VER_X_Y/support/motor-* -name '*.dbd'); do
-      dbdbasename="${mdbd##*/}" &&
-      #echo mdbd=$mdbd dbdbasename=$dbdbasename &&
-      if ! test -f $dbdbasename; then
-        $CP -fv $mdbd $dbdbasename
-      fi
-    done
-  ) &&
-  (
-    $MKDIR Db &&
-    cd Db &&
-    $RM -rf * &&
-    for mdbd in $(find ../../../$SYNAPPS_VER_X_Y/support/motor-* -name '*.db'); do
-      dbdbasename="${mdbd##*/}" &&
-      #echo mdbd=$mdbd dbdbasename=$dbdbasename &&
-      if ! test -f $dbdbasename; then
-        $CP -fv $mdbd $dbdbasename
-      fi
-    done
-  ) &&
-  (
-    motorlib=$(find ../../$SYNAPPS_VER_X_Y/support/motor-*/ -name lib | sed -e "s!//!/!g");
-    echo motorlib=$motorlib
-    $LN -s "$motorlib" lib
-  ) &&
-  (
-    motorinclude=$(find ../../$SYNAPPS_VER_X_Y/support/motor-*/ -name include | sed -e "s!//!/!g");
-    echo motorinclude=$motorinclude
-    $LN -s "$motorinclude" include
-  )
 }
 
 install_streamdevice()
@@ -651,7 +542,7 @@ fi
 export PATH=\$PATH:\$EPICS_BASE_BIN:\$EPICS_EXT_BIN
 export SUPPORT=\${EPICS_ROOT}/support
 export ASYN=\${EPICS_BASE}/asyn
-export BUSY=$(SUPPORT)/busy-1-6
+export BUSY=\${SUPPORT}/busy-1-6
 EOF
 
 $CP $BASH_ALIAS_EPICS $EPICS_ROOT/.epics.$EPICS_HOST_ARCH &&
@@ -802,9 +693,7 @@ if test -n "$ASYN_VER_X_Y"; then
   create_soft_x_y $EPICS_ROOT/modules ../$ASYN_VER_X_Y/ asyn
     (
       #Note1: asyn should be under modules/
-      #Note2: if "ASYNVER" = GIT
       cd $EPICS_ROOT &&
-      if test "$ASYNVER" = GIT; then
         if ! test -d $ASYN_VER_X_Y; then
 					(
 						$FSUDO git clone https://github.com/epics-modules/asyn.git $ASYN_VER_X_Y
@@ -813,27 +702,6 @@ if test -n "$ASYN_VER_X_Y"; then
 					) ||
              ( $RM -rf $ASYN_VER_X_Y; false )
         fi
-      else
-        if ! test -f $ASYN_VER_X_Y.tar.gz; then
-          wget_or_curl http://www.aps.anl.gov/epics/download/modules/$ASYN_VER_X_Y.tar.gz $ASYN_VER_X_Y.tar.gz
-        fi
-        if ! test -d $ASYN_VER_X_Y; then
-          tar xzvf $ASYN_VER_X_Y.tar.gz
-        fi
-      fi
-    ) &&
-    (
-      # Need to fix epics base for synapss already here,
-      # (if the dir already exists)
-      path=$EPICS_ROOT/$SYNAPPS_VER_X_Y/support/configure &&
-      if test -d $path; then
-        echo cd $path &&
-        cd $path &&
-        (
-          fix_epics_base EPICS_BASE.$EPICS_HOST_ARCH &&
-          fix_epics_base SUPPORT.$EPICS_HOST_ARCH
-        )
-      fi
     ) &&
     (
       cd $EPICS_ROOT/$ASYN_VER_X_Y/configure && {
@@ -855,215 +723,11 @@ else
 fi
 
 
-#synApps
-if test -n "$SYNAPPS_VER_X_Y"; then
-  (
-    echo XXX SYNAPPS_VER_X_Y defined
-    cd $EPICS_ROOT &&
-    if ! test -f $SYNAPPS_VER_X_Y.tar.gz; then
-      wget_or_curl http://www.aps.anl.gov/bcda/synApps/tar/$SYNAPPS_VER_X_Y.tar.gz $SYNAPPS_VER_X_Y.tar.gz
-    fi &&
-    if ! test -d $SYNAPPS_VER_X_Y; then
-      tar xzvf $SYNAPPS_VER_X_Y.tar.gz
-    fi
-  ) || {
-    echo >&2 failed tar xzvf $SYNAPPS_VER_X_Y.tar.gz in $PWD
-    exit 1
-  } &&
-  (
-    if test -n "$STREAMDEVICEVER"; then
-      cd $EPICS_ROOT/$SYNAPPS_VER_X_Y/support/stream* &&
-      (
-        #Move the directory out of its way
-        if ! test -d streamdevice.original; then
-          $MV streamdevice streamdevice.original || {
-            echo >&2 can not $MV streamdevice streamdevice.original PWD=$PWD
-            exit 1
-          }
-          #copy the later streamdevice
-          $MKDIR streamdevice &&
-          $CP -R ../../../StreamDevice-2-6/ streamdevice/  || {
-            echo >&2 $CP -R ../../../StreamDevice-2-6/ streamdevice/PWD=$PWD
-            exit 1
-          }
-        fi
-      )
-    fi
-  ) &&
-  (
-    path=$EPICS_ROOT/$SYNAPPS_VER_X_Y/support &&
-    echo cd $path &&
-    cd $path &&
-    for f in $(find . -name RELEASE); do
-      fix_epics_base $f
-    done &&
-    (
-      cd configure &&
-      $MKDIR -p orig || {
-      echo >&2 failed $MKDIR -p orig in $PWD
-        exit 1
-      }
-      for f in EPICS_BASE.cygwin* EPICS_BASE.linux-* EPICS_BASE.win32-* EPICS_BASE.windows-* SUPPORT.cygwin-*  SUPPORT.linux-*  SUPPORT.win32-*  SUPPORT.windows-*; do
-        if test -f "$f"; then
-          $MV -v "$f" $PWD/orig/ || {
-            echo >&2 failed $MV "$f" orig/ in $PWD
-            exit 1
-          }
-        fi
-      done
-    ) &&
-    (
-      echo cd $EPICS_ROOT/$SYNAPPS_VER_X_Y/support/configure &&
-      cd $EPICS_ROOT/$SYNAPPS_VER_X_Y/support/configure &&
-      if test "$SYNAPPS_VER_X_Y" = synApps_5_6; then
-      (
-        path=$EPICS_ROOT/$SYNAPPS_VER_X_Y/support
-        echo cd $path &&
-        cd $path &&
-        if ! test -f makereleaseok; then
-          make release && touch makereleaseok || {
-            echo >&2 failed make release in $PWD
-            exit 1
-          }
-        else
-          echo The file $PWD/makereleaseok exist, skipping make release
-        fi
-      )
-      fi &&
-      fix_epics_base $PWD/RELEASE &&
-      remove_modules_from_RELEASE RELEASE &&
-      (
-        echo cd $EPICS_ROOT/$SYNAPPS_VER_X_Y/support &&
-        cd $EPICS_ROOT/$SYNAPPS_VER_X_Y/support &&
-        file=Makefile &&
-        if ! test -f $file.original; then
-          $CP -v $file $file.original || exit 1
-        fi &&
-        $CP $file.original $file &&
-        remove_modules_from_Makefile $file
-      ) &&
-      file=Makefile &&
-      (
-        # Remove AREA_DETECTOR and IP from RELEASE
-        cd $EPICS_ROOT/$SYNAPPS_VER_X_Y/support/xxx-5*/configure &&
-        if ! test -f RELEASE.original; then
-          $CP -v RELEASE RELEASE.original || exit 1
-        fi &&
-        sed <RELEASE.original >RELEASE.$$.tmp \
-          -e "s!^AREA_DETECTOR!#AREA_DETECTOR!" \
-          -e "s!^IP=!#IP=!" \
-          -e "s!^SNCSEQ!#SNCSEQ!" &&
-        $MV -fv RELEASE.$$.tmp RELEASE
-      ) &&
-      (
-        # Remove AREA_DETECTOR and IP from dbd
-        cd $EPICS_ROOT/$SYNAPPS_VER_X_Y/support/xxx-5*/xxxApp/src &&
-        if test -f xxxCommonInclude.dbd; then
-          if ! test -f xxxCommonInclude.dbd.original; then
-            $CP -v xxxCommonInclude.dbd xxxCommonInclude.dbd.original || exit 1
-          fi &&
-          sed <xxxCommonInclude.dbd.original >xxxCommonInclude.dbd.$$.tmp \
-            -e "s!\(include.*ipSupport.dbd\)!#\1!" &&
-          $MV -fv xxxCommonInclude.dbd.$$.tmp xxxCommonInclude.dbd
-        fi
-      ) &&
-      (
-        # Remove AREA_DETECTOR related modules from $file
-        cd $EPICS_ROOT/$SYNAPPS_VER_X_Y/support/xxx-5*/xxxApp/src &&
-        if ! test -f $file.original; then
-          $CP -v $file $file.original || exit 1
-        fi &&
-        $CP $file.original $file &&
-        for mod in $MODSFROMMAKEFILE; do
-          echo removing $mod in $PWD/$file &&
-          sed -e "s/\(.*$mod.*\)/#XXX Removed by install-epics.sh XXX  \1/g" <$file >$file.$$.tmp &&
-          ! diff $file $file.$$.tmp >/dev/null &&
-          $MV -f $PWD/$file.$$.tmp $PWD/$file ||{
-            echo >&2 failed removing $mod in $PWD
-            exit 1
-          }
-        done
-      )
-    ) || {
-      echo >&2 failed in $PWD
-      exit 1
-    }
-  ) || {
-    echo >&2 failed RELEASE in $PWD
-    exit 1
-  } &&
-  if test -z "$ASYN_VER_X_Y"; then
-    (
-      echo ASYN_VER_X_Y not defined, use asyn from synapps
-      install_asyn_ver ../$SYNAPPS_VER_X_Y/support/asyn-4-*
-    )
-  fi
-else
-  echo XXX SYNAPPS_VER_X_Y not defined, skipping synApps
-fi
-
-if test "$EPICS_EXTENSIONS_TOP_VER"; then
-  (
-    cd $EPICS_ROOT &&
-    if ! test -f $EPICS_EXTENSIONS_TOP_VER.tar.gz; then
-      echo installing $EPICS_EXTENSIONS_TOP_VER &&
-      wget_or_curl http://www.aps.anl.gov/epics/download/extensions/$EPICS_EXTENSIONS_TOP_VER.tar.gz  $EPICS_EXTENSIONS_TOP_VER.tar.gz
-    fi
-    if ! test -d ${EPICS_EXTENSIONS_TOP_VER}; then
-      tar xzf $EPICS_EXTENSIONS_TOP_VER.tar.gz
-    fi
-  )
-fi &&
-if ! type re2c >/dev/null 2>/dev/null; then
-  echo $APTGET re2c
-  $APTGET re2c || install_re2c
-fi &&
-if test "$EPICS_MSI_VER"; then
-  (
-      cd $EPICS_ROOT &&
-      if ! test -f $EPICS_MSI_VER.tar.gz; then
-        echo installing $EPICS_MSI_VER &&
-        wget_or_curl http://www.aps.anl.gov/epics/download/extensions/$EPICS_MSI_VER.tar.gz $EPICS_MSI_VER.tar.gz
-      fi &&
-      (
-        $MKDIR -p extensions/src &&
-        cd extensions/src &&
-        tar xzf ../../$EPICS_MSI_VER.tar.gz &&
-        cd $EPICS_MSI_VER &&
-        run_make_in_dir . || {
-          echo >&2 make failed in $PWD
-          exit 1
-        }
-      ) || {
-        echo >&2 msi failed in $PWD
-        exit 1
-      }
-  )
-fi &&
 if test -z "$ASYN_VER_X_Y"; then
-  #Need to compile asyn from synapps
   run_make_in_dir $EPICS_ROOT/$SYNAPPS_VER_X_Y/support/asyn-*/asyn
 fi &&
-if test -n "$SYNAPPS_VER_X_Y"; then
-  run_make_in_dir $EPICS_ROOT/$SYNAPPS_VER_X_Y/support/sscan* &&
-  run_make_in_dir $EPICS_ROOT/$SYNAPPS_VER_X_Y/support/calc-* &&
-  run_make_in_dir $EPICS_ROOT/$SYNAPPS_VER_X_Y/support/stream-* || {
-    echo >&2 failed $SYNAPPS_VER_X_Y PWD=$PWD PATH=$PATH
-    exit 1
-  }
-fi
 
-if test -z "$AXISVER"; then
-  patch_motor_h $EPICS_ROOT/$SYNAPPS_VER_X_Y/support/motor-*/motorApp/MotorSrc &&
-  comment_out_in_file $EPICS_ROOT/$SYNAPPS_VER_X_Y/support/motor-*/motorApp/Makefile HytecSrc AerotechSrc &&
-  run_make_in_dir $EPICS_ROOT/$SYNAPPS_VER_X_Y/support/motor-*/motorApp || {
-    echo >&2 failed $SYNAPPS_VER_X_Y PWD=$PWD PATH=$PATH
-    exit 1
-  }
-  install_motor_from_synapps
-else
-  install_axis_X_Y
-fi &&
+install_axis_X_Y &&
 install_streamdevice &&
 echo install $EPICS_ROOT OK || {
   echo >&2 failed install_streamdevice PWD=$PWD
