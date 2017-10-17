@@ -41,10 +41,6 @@ if test -n "$ASYN_GIT_VER"; then
   ASYN_VER_X_Y=asyn$ASYN_GIT_VER
   EPICS_ROOT=${EPICS_ROOT}_ASYN_${ASYN_GIT_VER}
 fi
-if test -n "$AXISVER"; then
-  AXIS_VER_X_Y=axis
-	EPICS_ROOT=${EPICS_ROOT}_axis
-fi
 
 if test "$EPICS_DEBUG" = y; then
   EPICS_ROOT=${EPICS_ROOT}_DBG
@@ -123,6 +119,18 @@ if test -x /opt/local/bin/port; then
 fi
 export APTGET
 #########################
+
+create_RELEASE_local()
+{
+  file=$1 &&
+	echo PWD=$PWD file=$file &&
+	cat >$file <<EOF
+EPICS_BASE  = $EPICS_ROOT/base
+SUPPORT     = \$(EPICS_BASE)/../support
+ASYN        = \$(EPICS_BASE)/../modules/asyn
+EOF
+}
+	
 
 create_soft_x_y() {
   dir=$1
@@ -281,34 +289,29 @@ install_axis_X_Y ()
 		echo >&2 "can include $EPICS_ROOT/.epics.$EPICS_HOST_ARCH"
 		exit 1
 	}
-  create_soft_x_y $EPICS_ROOT/modules ../$AXIS_VER_X_Y/ axis
+  create_soft_x_y $EPICS_ROOT/modules ../axis/ axis
   (
     cd $EPICS_ROOT &&
-      if ! test -d $AXIS_VER_X_Y; then
+      if ! test -d axis; then
 				(
-					$FSUDO git clone --recursive --branch $AXIS_GIT_VER https://github.com/EPICS-motor-wg/axis.git $AXIS_VER_X_Y
+					$FSUDO git clone --recursive --branch $AXIS_GIT_VER https://github.com/EPICS-motor-wg/axis.git axis
 				)||
-          ( $RM -rf $AXIS_VER_X_Y; false )
+          ( $RM -rf axis; false )
       fi
   ) &&
-  if test -n "$AXISVER"; then
-    (
-      cd $EPICS_ROOT/$AXIS_VER_X_Y/configure && {
-        for f in $(find . -name "RELEASE*" ); do
-          echo f=$f
-          fix_epics_base $f
-        done
-      }
-    ) &&
-    (
-      echo run_make_in_dir $EPICS_ROOT/$AXIS_VER_X_Y &&
-      run_make_in_dir $EPICS_ROOT/$AXIS_VER_X_Y &&
-      echo done run_make_in_dir $EPICS_ROOT/$AXIS_VER_X_Y
-    ) || {
-      echo >&2 failed $AXIS_VER_X_Y
-      exit 1
+	(
+    cd $EPICS_ROOT/axis/configure && {
+			create_RELEASE_local RELEASE.local
     }
-  fi
+  ) &&
+  (
+    echo run_make_in_dir $EPICS_ROOT/$AXIS_VER_X_Y &&
+      run_make_in_dir $EPICS_ROOT/modules/axis &&
+      echo done run_make_in_dir $EPICS_ROOT/$AXIS_VER_X_Y
+  ) || {
+    echo >&2 failed $AXIS_VER_X_Y
+    exit 1
+  }
 }
 
 install_streamdevice()
@@ -418,7 +421,6 @@ fix_epics_base()
     echo fix_epics_base PWD=$PWD file=$file does not exist, doing nothing
   fi
 }
-
 
 remove_modules_from_RELEASE()
 {
