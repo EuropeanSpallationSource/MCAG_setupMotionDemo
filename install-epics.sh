@@ -120,13 +120,21 @@ fi
 export APTGET
 #########################
 
-create_RELEASE_local()
+create_AXIS_RELEASE_PATH_local()
 {
   file=$1 &&
 	echo PWD=$PWD file=$file &&
 	cat >$file <<EOF
 EPICS_BASE  = $EPICS_ROOT/base
 SUPPORT     = \$(EPICS_BASE)/../support
+EOF
+}
+	
+create_AXIS_RELEASE_LIBS_local()
+{
+  file=$1 &&
+	echo PWD=$PWD file=$file &&
+	cat >$file <<EOF
 ASYN        = \$(EPICS_BASE)/../modules/asyn
 EOF
 }
@@ -301,7 +309,8 @@ install_axis_X_Y ()
   ) &&
 	(
     cd $EPICS_ROOT/axis/configure && {
-			create_RELEASE_local RELEASE.local
+			create_AXIS_RELEASE_PATH_local RELEASE_PATHS.local &&
+			create_AXIS_RELEASE_LIBS_local RELEASE_LIBS.local
     }
   ) &&
   (
@@ -406,7 +415,7 @@ fix_epics_base()
       }
     fi &&
     sed <"$filebasename.original" >/tmp/$$.tmp \
-      -e "s!^SUPPORT=.*!SUPPORT=$EPICS_ROOT/$SYNAPPS_VER_X_Y/support!" \
+      -e "s!^SUPPORT=.*!SUPPORT=$EPICS_ROOT/base/../support!" \
       -e "s!^EPICS_BASE=.*!EPICS_BASE=$EPICS_ROOT/base!" \
       -e "s!^\(IPAC=.*\)!## rem by install-epics \1!" \
       -e "s!^BUSY=.*!BUSY=\$(SUPPORT)/busy-1-6!" \
