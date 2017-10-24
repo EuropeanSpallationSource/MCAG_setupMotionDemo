@@ -18,8 +18,7 @@ EPICS_BASE_GIT_VER=R${EPICS_BASE_VER}
 ASYN_GIT_VER=R4-31
 
 #AXIS_GIT_VER=master
-AXIS_GIT_VER=torsten/171017-move-doc-submodules
-
+AXIS_GIT_VER=torsten/17123-move-doc-submodules-axisCore-xx
 
 # Debug version for e.g. kdbg
 EPICS_DEBUG=n
