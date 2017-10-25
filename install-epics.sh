@@ -135,6 +135,16 @@ ASYN        = \$(EPICS_BASE)/../modules/asyn
 EOF
 }
 	
+create_DRIVERS_RELEASE_LIBS_local()
+{
+  file=$1 &&
+	echo PWD=$PWD file=$file &&
+	cat >$file <<EOF
+ASYN        = \$(EPICS_BASE)/../modules/asyn
+AXIS        = \$(EPICS_BASE)/../modules/axis
+EOF
+}
+	
 
 create_soft_x_y() {
   dir=$1
@@ -313,7 +323,21 @@ install_axis_X_Y ()
     echo run_make_in_dir $EPICS_ROOT/$AXIS_VER_X_Y &&
       run_make_in_dir $EPICS_ROOT/modules/axis &&
       echo done run_make_in_dir $EPICS_ROOT/$AXIS_VER_X_Y
-  ) || {
+  ) &&
+	(
+		for d in $EPICS_ROOT/axis/drivers/*; do
+			(
+				cd "$d" &&
+					(
+						echo SUB PWD=$PWD &&
+						cd configure &&
+						create_AXIS_RELEASE_PATH_local RELEASE_PATHS.local &&
+						create_DRIVERS_RELEASE_LIBS_local RELEASE_LIBS.local
+					)  &&
+				make 
+			)
+		done
+	)|| {
     echo >&2 failed $AXIS_VER_X_Y
     exit 1
   }
