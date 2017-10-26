@@ -320,9 +320,9 @@ install_axis_X_Y ()
     }
   ) &&
   (
-    echo run_make_in_dir $EPICS_ROOT/$AXIS_VER_X_Y &&
-      run_make_in_dir $EPICS_ROOT/modules/axis &&
-      echo done run_make_in_dir $EPICS_ROOT/$AXIS_VER_X_Y
+    echo run_make_in_dir $EPICS_ROOT/$AXIS_VER_X_Y/axisCore &&
+      run_make_in_dir $EPICS_ROOT/modules/axis/axisCore &&
+      echo done run_make_in_dir $EPICS_ROOT/$AXIS_VER_X_Y/axisCore
   ) &&
 	(
 		for d in $EPICS_ROOT/axis/drivers/*; do
