@@ -8,7 +8,7 @@ uname_m=$(uname -m 2>/dev/null || echo unknown)
 BASH_ALIAS_EPICS=./.epics.$(hostname).$uname_s.$uname_m
 
 #Version of base
-EPICS_BASE_VER=3.15.4
+EPICS_BASE_VER=3.15.5
 BASE_VER=GIT
 EPICS_BASE_GIT_VER=R${EPICS_BASE_VER}
 
