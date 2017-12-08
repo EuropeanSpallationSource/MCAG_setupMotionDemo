@@ -1,4 +1,11 @@
 #!/bin/sh
+#Clean up from EEE
+EPICS_BASE=
+EPICS_BASES_PATH=
+EPICS_ENV_PATH=
+EPICS_HOST_ARCH=
+EPICS_MODULES_PATH=
+export EPICS_BASE EPICS_BASES_PATH EPICS_ENV_PATH EPICS_HOST_ARCH EPICS_MODULES_PATH 
 
 EPICS_DOWNLOAD=$PWD/epics-for-Motion
 
@@ -6,6 +13,7 @@ uname_s=$(uname -s 2>/dev/null || echo unknown)
 uname_m=$(uname -m 2>/dev/null || echo unknown)
 
 BASH_ALIAS_EPICS=./.epics.$(hostname).$uname_s.$uname_m
+
 
 #Version of base
 EPICS_BASE_VER=3.15.5
@@ -17,11 +25,10 @@ EPICS_BASE_GIT_VER=R${EPICS_BASE_VER}
 #ASYNVER=4-21
 ASYN_GIT_VER=R4-31
 
-#AXIS_GIT_VER=master
-AXIS_GIT_VER=torsten/171206-Ethercat-IcePAP-axisTest
+AXIS_GIT_VER=master
 
 # Debug version for e.g. kdbg
-EPICS_DEBUG=n
+EPICS_DEBUG=y
 if test "$EPICS_DEBUG" = ""; then
   if type kdbg; then
     EPICS_DEBUG=y
@@ -383,7 +390,7 @@ patch_CONFIG_gnuCommon()
     fi &&
     $CP $file.original $file &&
     case $PWD in
-      *3.14.12.3*|*3.14.12.5*|*3.15.1*|*3.15.2*)
+      *3.14.12.3*|*3.14.12.5*|*3.15.1*|*3.15.2*|*3.15.5*)
       cat <<\EOF > "$file.patch"
 diff --git a/CONFIG.gnuCommon b/CONFIG.gnuCommon
 index f054802..d59a420 100644
@@ -553,6 +560,12 @@ echo PATH=$PATH
 export EPICS_BASE_BIN EPICS_EXT EPICS_EXT_LIB EPICS_EXT_BIN PATH LD_LIBRARY_PATH
 #update .epics
 cat >${BASH_ALIAS_EPICS} <<EOF &&
+EPICS_BASE=
+EPICS_BASES_PATH=
+EPICS_ENV_PATH=
+EPICS_HOST_ARCH=
+EPICS_MODULES_PATH=
+export EPICS_BASE EPICS_BASES_PATH EPICS_ENV_PATH EPICS_HOST_ARCH EPICS_MODULES_PATH 
 export EPICS_DEBUG=$EPICS_DEBUG
 export EPICS_DOWNLOAD=$EPICS_DOWNLOAD
 export EPICS_ROOT=$EPICS_ROOT
@@ -575,7 +588,8 @@ export SUPPORT=\${EPICS_ROOT}/support
 export ASYN=\${EPICS_BASE}/asyn
 export BUSY=\${SUPPORT}/busy-1-6
 EOF
-
+. $BASH_ALIAS_EPICS &&
+set | grep EPICS &&
 $CP $BASH_ALIAS_EPICS $EPICS_ROOT/.epics.$EPICS_HOST_ARCH &&
 $CP $BASH_ALIAS_EPICS ../.. &&
 ################
