@@ -48,7 +48,7 @@ fi
 if test "$EPICS_DEBUG" = y; then
   EPICS_ROOT=${EPICS_ROOT}_DBG
 fi
-EPICS_BASE=$EPICS_ROOT/base
+EPICS_BASE=$EPICS_ROOT/base-${EPICS_BASE_VER}
 EPICS_MODULES=$EPICS_ROOT/modules
 
 echo EPICS_ROOT=$EPICS_ROOT
@@ -128,7 +128,7 @@ create_AXIS_RELEASE_PATH_local()
   file=$1 &&
 	echo PWD=$PWD file=$file &&
 	cat >$file <<EOF
-EPICS_BASE  = $EPICS_ROOT/base
+EPICS_BASE  = $EPICS_ROOT/base-${EPICS_BASE_VER}
 SUPPORT     = \$(EPICS_BASE)/../support
 EOF
 }
@@ -138,7 +138,7 @@ create_AXIS_RELEASE_LIBS_local()
   file=$1 &&
 	echo PWD=$PWD file=$file &&
 	cat >$file <<EOF
-ASYN        = \$(EPICS_BASE)/../modules/asyn
+ASYN        = \$(EPICS_BASE)/../modules/$ASYN_VER_X_Y
 EOF
 }
 	
@@ -147,38 +147,11 @@ create_DRIVERS_RELEASE_LIBS_local()
   file=$1 &&
 	echo PWD=$PWD file=$file &&
 	cat >$file <<EOF
-ASYN        = \$(EPICS_BASE)/../modules/asyn
+ASYN        = \$(EPICS_BASE)/../modules/$ASYN_VER_X_Y
 AXIS        = \$(EPICS_BASE)/../modules/axis
 EOF
 }
 	
-
-create_soft_x_y() {
-  dir=$1
-  src=$2
-  dst=$3
-  echo dir=$dir create_soft_x_y "$@"
-  export dir src dst
-  (
-    cd "$dir" &&
-    linkdst=$(readlink $dst) || linkdst=""
-    if ! test "$linkdst" || test "$linkdst" != "$src"; then
-      # unlink, first as user, then as SUDO
-      if test "$linkdst" != "$src"; then
-        echo "$linkdst" != "$dst" &&
-        echo PWD=$PWD $RM $dst &&
-        $RM -f $dst &&
-        echo PWD=$PWD $LN -s $src $dst &&
-        $LN -s $src $dst || {
-          echo >&2 can not link $src $dst
-          exit 1
-        }
-      fi
-    fi
-  )
-}
-
-
 ########################
 if ! test -d $EPICS_ROOT; then
   echo $MKDIR -p $EPICS_ROOT &&
@@ -204,8 +177,6 @@ echo FSUDO=$FSUDO
 if ! test -d /usr/local; then
   sudo $MKDIR /usr/local
 fi &&
-create_soft_x_y $EPICS_ROOT base-${EPICS_BASE_VER} base &&
-
 
 wget_or_curl()
 {
@@ -310,9 +281,8 @@ install_axis_X_Y ()
 		echo >&2 "can include $EPICS_ROOT/.epics.$EPICS_HOST_ARCH"
 		exit 1
 	}
-  create_soft_x_y $EPICS_ROOT/modules ../axis/ axis
   (
-    cd $EPICS_ROOT &&
+    cd $EPICS_ROOT/modules &&
       if ! test -d axis; then
 				(
 					$FSUDO git clone --recursive --branch $AXIS_GIT_VER https://github.com/EPICS-motor-wg/axis.git axis
@@ -321,18 +291,18 @@ install_axis_X_Y ()
       fi
   ) &&
 	(
-    cd $EPICS_ROOT/axis/configure && {
+    cd $EPICS_ROOT/modules/axis/configure && {
 			create_AXIS_RELEASE_PATH_local RELEASE_PATHS.local &&
 			create_AXIS_RELEASE_LIBS_local RELEASE_LIBS.local
     }
   ) &&
   (
-    echo run_make_in_dir $EPICS_ROOT/$AXIS_VER_X_Y/axisCore &&
+    echo run_make_in_dir $EPICS_ROOT/modules/axisCore &&
       run_make_in_dir $EPICS_ROOT/modules/axis/axisCore &&
-      echo done run_make_in_dir $EPICS_ROOT/$AXIS_VER_X_Y/axisCore
+      echo done run_make_in_dir $EPICS_ROOT/modules/axisCore
   ) &&
 	(
-		for d in $EPICS_ROOT/axis/drivers/*; do
+		for d in $EPICS_ROOT/modules/axis/drivers/*; do
 			(
 				cd "$d" &&
 					(
@@ -345,7 +315,7 @@ install_axis_X_Y ()
 			)
 		done
 	)|| {
-    echo >&2 failed $AXIS_VER_X_Y
+    echo >&2 failed axis/drivers
     exit 1
   }
 }
@@ -442,8 +412,8 @@ fix_epics_base()
       }
     fi &&
     sed <"$filebasename.original" >/tmp/$$.tmp \
-      -e "s!^SUPPORT=.*!SUPPORT=$EPICS_ROOT/base/../support!" \
-      -e "s!^EPICS_BASE=.*!EPICS_BASE=$EPICS_ROOT/base!" \
+      -e "s!^SUPPORT=.*!SUPPORT=$EPICS_ROOT/base-${EPICS_BASE_VER}/../support!" \
+      -e "s!^EPICS_BASE=.*!EPICS_BASE=$EPICS_ROOT/base-${EPICS_BASE_VER}!" \
       -e "s!^\(IPAC=.*\)!## rem by install-epics \1!" \
       -e "s!^BUSY=.*!BUSY=\$(SUPPORT)/busy-1-6!" \
       -e "s!^\(SNCSEQ=.*\)!## rem by install-epics \1!"
@@ -537,13 +507,22 @@ fi  &&
   esac
 ) || exit 1
 
-#Need to set the softlink now
 
-if test -n "$EPICS_HOST_ARCH"; then
-EPICS_HOST_ARCH=$($EPICS_ROOT/base-${EPICS_BASE_VER}/startup/EpicsHostArch) || {
-  echo >&2 EPICS_HOST_ARCH failed
-  exit 1
-}
+if test X = "X$EPICS_HOST_ARCH"; then
+	UNAME=$(uname)
+	echo UNAME=$UNAME EPICS_HOST_ARCH=$EPICS_HOST_ARCH
+	case $UNAME in
+  MINGW64_NT-6.1)
+		EPICS_HOST_ARCH=windows-x64-mingw
+    ;;
+  *)
+		EPICS_HOST_ARCH=$($EPICS_ROOT/base-${EPICS_BASE_VER}/startup/EpicsHostArch) || {
+			echo >&2 EPICS_HOST_ARCH failed
+			exit 1
+		}
+		;;
+	esac
+	echo UNAME=$UNAME EPICS_HOST_ARCH=$EPICS_HOST_ARCH
 fi
 # here we know the EPICS_HOST_ARCH
 export EPICS_HOST_ARCH
@@ -569,9 +548,9 @@ export EPICS_BASE EPICS_BASES_PATH EPICS_ENV_PATH EPICS_HOST_ARCH EPICS_MODULES_
 export EPICS_DEBUG=$EPICS_DEBUG
 export EPICS_DOWNLOAD=$EPICS_DOWNLOAD
 export EPICS_ROOT=$EPICS_ROOT
-export EPICS_BASE=\$EPICS_ROOT/base
+export EPICS_BASE=\$EPICS_ROOT/base-${EPICS_BASE_VER}
 export EPICS_EXT=\${EPICS_ROOT}/extensions
-export EPICS_HOST_ARCH=$($EPICS_BASE/startup/EpicsHostArch)
+export EPICS_HOST_ARCH=$EPICS_HOST_ARCH
 export EPICS_EXT_BIN=${EPICS_EXT}/bin/\$EPICS_HOST_ARCH
 export EPICS_EXT_LIB=${EPICS_EXT}/lib/\$EPICS_HOST_ARCH
 export EPICS_MODULES=\$EPICS_ROOT/modules
@@ -610,6 +589,7 @@ $CP $BASH_ALIAS_EPICS ../.. &&
   # Mac OS: /usr/include/readline/readline.h
   # Linux: /usr/include/readline.h
   if ! test -r /usr/include/readline/readline.h; then
+    test -r /mingw64/include/editline/readline.h ||   
     test -r /usr/include/readline.h ||
     $APTGET readline-devel ||
     $APTGET libreadline-dev ||
@@ -619,9 +599,9 @@ $CP $BASH_ALIAS_EPICS ../.. &&
     }
   fi &&
   if test "$EPICS_DEBUG" = y; then
-    patch_CONFIG_gnuCommon $EPICS_ROOT/base/configure
+    patch_CONFIG_gnuCommon $EPICS_ROOT/base-${EPICS_BASE_VER}/configure
   fi &&
-  run_make_in_dir $EPICS_ROOT/base || {
+  run_make_in_dir $EPICS_ROOT/base-${EPICS_BASE_VER} || {
     echo >&2 failed in $PWD
     exit 1
   }
@@ -735,10 +715,9 @@ fi
 
 if test -n "$ASYN_VER_X_Y"; then
 (
-  create_soft_x_y $EPICS_ROOT/modules ../$ASYN_VER_X_Y/ asyn
     (
       #Note1: asyn should be under modules/
-      cd $EPICS_ROOT &&
+      cd $EPICS_ROOT/modules &&
         if ! test -d $ASYN_VER_X_Y; then
 					(
 						$FSUDO git clone https://github.com/epics-modules/asyn.git $ASYN_VER_X_Y
@@ -749,7 +728,7 @@ if test -n "$ASYN_VER_X_Y"; then
         fi
     ) &&
     (
-      cd $EPICS_ROOT/$ASYN_VER_X_Y/configure && {
+      cd $EPICS_ROOT/modules/$ASYN_VER_X_Y/configure && {
         for f in $(find . -name "RELEASE*" ); do
           echo f=$f
           fix_epics_base $f
@@ -757,7 +736,7 @@ if test -n "$ASYN_VER_X_Y"; then
       }
     ) &&
     (
-      run_make_in_dir $EPICS_ROOT/$ASYN_VER_X_Y
+      run_make_in_dir $EPICS_ROOT/modules/$ASYN_VER_X_Y
     ) || {
       echo >&2 failed $ASYN_VER_X_Y
       exit 1
