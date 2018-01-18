@@ -26,6 +26,9 @@ EPICS_BASE_GIT_VER=R${EPICS_BASE_VER}
 ASYN_GIT_VER=R4-31
 
 #AXIS_GIT_VER=master
+MOTOR_GIT_VER=master
+MOTOR_GIT_VER=torsten/180118-1514-motor-again-WIP-important
+
 
 # Debug version for e.g. kdbg
 EPICS_DEBUG=y
@@ -43,6 +46,11 @@ EPICS_ROOT=$EPICS_DOWNLOAD/EPICS_BASE_${EPICS_BASE_VER}
 if test -n "$ASYN_GIT_VER"; then
   ASYN_VER_X_Y=asyn$ASYN_GIT_VER
   EPICS_ROOT=${EPICS_ROOT}_ASYN_${ASYN_GIT_VER}
+fi
+
+if test -n "$MOTOR_GIT_VER"; then
+  ASYN_VER_X_Y=asyn$ASYN_GIT_VER
+  EPICS_ROOT=${EPICS_ROOT}_MOTOR
 fi
 
 if test "$EPICS_DEBUG" = y; then
@@ -141,7 +149,26 @@ create_ASYN_AXIS_RELEASE_LIBS_local()
 ASYN        = \$(EPICS_BASE)/../modules/$ASYN_VER_X_Y
 EOF
 }
+
+create_ASYN_MOTOR_RELEASE_LIBS_local()
+{
+  file=$1 &&
+	echo PWD=$PWD file=$file &&
+	cat >$file <<EOF
+ASYN        = \$(EPICS_BASE)/../modules/$ASYN_VER_X_Y
+EOF
+}
 	
+create_MOTOR_DRIVERS_RELEASE_LIBS_local()
+{
+  file=$1 &&
+	echo PWD=$PWD file=$file &&
+	cat >$file <<EOF
+ASYN        = \$(EPICS_BASE)/../modules/$ASYN_VER_X_Y
+MOTOR       = \$(EPICS_BASE)/../modules/motor
+EOF
+}
+
 create_AXIS_DRIVERS_RELEASE_LIBS_local()
 {
   file=$1 &&
@@ -151,7 +178,7 @@ ASYN        = \$(EPICS_BASE)/../modules/$ASYN_VER_X_Y
 AXIS        = \$(EPICS_BASE)/../modules/axis
 EOF
 }
-	
+
 ########################
 if ! test -d $EPICS_ROOT; then
   echo $MKDIR -p $EPICS_ROOT &&
@@ -339,23 +366,24 @@ install_motor_X_Y ()
 		(
 			cd $EPICS_ROOT/modules/motor/configure && {
         create_BASE_SUPPORT_RELEASE_PATH_local RELEASE_PATHS.local &&
-          create_ASYN_AXIS_RELEASE_LIBS_local RELEASE_LIBS.local
+					create_ASYN_MOTOR_RELEASE_LIBS_local RELEASE_LIBS.local
 			}
 		) &&
 		(
-			echo run_make_in_dir $EPICS_ROOT/modules/motorCore &&
-				run_make_in_dir $EPICS_ROOT/modules/motor/motorCore &&
-				echo done run_make_in_dir $EPICS_ROOT/modules/motorCore
+			echo run_make_in_dir $EPICS_ROOT/modules/motor &&
+				run_make_in_dir $EPICS_ROOT/modules/motor &&
+				echo done run_make_in_dir $EPICS_ROOT/modules/motor
 		) &&
     (
       for d in $EPICS_ROOT/modules/motor/drivers/*; do
         (
-          cd "$d" &&
+          test -d "$d" &&
+						cd "$d" &&
             (
               echo SUB PWD=$PWD &&
                 cd configure &&
-                create_MOTOR_RELEASE_PATH_local RELEASE_PATHS.local &&
-                create_AXIS_DRIVERS_RELEASE_LIBS_local RELEASE_LIBS.local
+                create_BASE_SUPPORT_RELEASE_PATH_local RELEASE_PATHS.local &&
+                create_MOTOR_DRIVERS_RELEASE_LIBS_local RELEASE_LIBS.local
             )  &&
             make 
         )
