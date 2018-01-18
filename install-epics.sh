@@ -25,7 +25,7 @@ EPICS_BASE_GIT_VER=R${EPICS_BASE_VER}
 #ASYNVER=4-21
 ASYN_GIT_VER=R4-31
 
-AXIS_GIT_VER=master
+#AXIS_GIT_VER=master
 
 # Debug version for e.g. kdbg
 EPICS_DEBUG=y
@@ -318,6 +318,52 @@ install_axis_X_Y ()
     echo >&2 failed axis/drivers
     exit 1
   }
+}
+
+install_motor_X_Y ()
+{
+  echo install_motor_X_Y
+  . $EPICS_ROOT/.epics.$EPICS_HOST_ARCH || {
+    echo >&2 "can include $EPICS_ROOT/.epics.$EPICS_HOST_ARCH"
+    exit 1
+  }
+  (
+    cd $EPICS_ROOT/modules &&
+      if ! test -d motor; then
+        (
+          $FSUDO git clone --recursive --branch $MOTOR_GIT_VER https://github.com/epics-modules/motor.git motor
+        )||
+          ( $RM -rf motor; false )
+      fi
+  ) &&
+		(
+			cd $EPICS_ROOT/modules/motor/configure && {
+        create_AXIS_RELEASE_PATH_local RELEASE_PATHS.local &&
+          create_AXIS_RELEASE_LIBS_local RELEASE_LIBS.local
+			}
+		) &&
+		(
+			echo run_make_in_dir $EPICS_ROOT/modules/motorCore &&
+				run_make_in_dir $EPICS_ROOT/modules/motor/motorCore &&
+				echo done run_make_in_dir $EPICS_ROOT/modules/motorCore
+		) &&
+    (
+      for d in $EPICS_ROOT/modules/motor/drivers/*; do
+        (
+          cd "$d" &&
+            (
+              echo SUB PWD=$PWD &&
+                cd configure &&
+                create_MOTOR_RELEASE_PATH_local RELEASE_PATHS.local &&
+                create_DRIVERS_RELEASE_LIBS_local RELEASE_LIBS.local
+            )  &&
+            make 
+        )
+      done
+    )|| {
+			echo >&2 failed motor/drivers
+			exit 1
+		}
 }
 
 install_streamdevice()
@@ -751,7 +797,13 @@ if test -z "$ASYN_VER_X_Y"; then
   run_make_in_dir $EPICS_ROOT/$SYNAPPS_VER_X_Y/support/asyn-*/asyn
 fi &&
 
-install_axis_X_Y &&
+if test -n "$AXIS_GIT_VER"; then
+	install_axis_X_Y
+fi &&
+if test -n "$MOTOR_GIT_VER"; then
+	install_motor_X_Y
+fi &&
+
 install_streamdevice &&
 echo install $EPICS_ROOT OK || {
   echo >&2 failed install_streamdevice PWD=$PWD
