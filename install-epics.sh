@@ -123,7 +123,7 @@ fi
 export APTGET
 #########################
 
-create_AXIS_RELEASE_PATH_local()
+create_BASE_SUPPORT_RELEASE_PATH_local()
 {
   file=$1 &&
 	echo PWD=$PWD file=$file &&
@@ -133,7 +133,7 @@ SUPPORT     = \$(EPICS_BASE)/../support
 EOF
 }
 	
-create_AXIS_RELEASE_LIBS_local()
+create_ASYN_AXIS_RELEASE_LIBS_local()
 {
   file=$1 &&
 	echo PWD=$PWD file=$file &&
@@ -142,7 +142,7 @@ ASYN        = \$(EPICS_BASE)/../modules/$ASYN_VER_X_Y
 EOF
 }
 	
-create_DRIVERS_RELEASE_LIBS_local()
+create_AXIS_DRIVERS_RELEASE_LIBS_local()
 {
   file=$1 &&
 	echo PWD=$PWD file=$file &&
@@ -292,8 +292,8 @@ install_axis_X_Y ()
   ) &&
 	(
     cd $EPICS_ROOT/modules/axis/configure && {
-			create_AXIS_RELEASE_PATH_local RELEASE_PATHS.local &&
-			create_AXIS_RELEASE_LIBS_local RELEASE_LIBS.local
+			create_BASE_SUPPORT_RELEASE_PATH_local RELEASE_PATHS.local &&
+			create_ASYN_AXIS_RELEASE_LIBS_local RELEASE_LIBS.local
     }
   ) &&
   (
@@ -308,8 +308,8 @@ install_axis_X_Y ()
 					(
 						echo SUB PWD=$PWD &&
 						cd configure &&
-						create_AXIS_RELEASE_PATH_local RELEASE_PATHS.local &&
-						create_DRIVERS_RELEASE_LIBS_local RELEASE_LIBS.local
+						create_BASE_SUPPORT_RELEASE_PATH_local RELEASE_PATHS.local &&
+						create_AXIS_DRIVERS_RELEASE_LIBS_local RELEASE_LIBS.local
 					)  &&
 				make 
 			)
@@ -338,8 +338,8 @@ install_motor_X_Y ()
   ) &&
 		(
 			cd $EPICS_ROOT/modules/motor/configure && {
-        create_AXIS_RELEASE_PATH_local RELEASE_PATHS.local &&
-          create_AXIS_RELEASE_LIBS_local RELEASE_LIBS.local
+        create_BASE_SUPPORT_RELEASE_PATH_local RELEASE_PATHS.local &&
+          create_ASYN_AXIS_RELEASE_LIBS_local RELEASE_LIBS.local
 			}
 		) &&
 		(
@@ -355,7 +355,7 @@ install_motor_X_Y ()
               echo SUB PWD=$PWD &&
                 cd configure &&
                 create_MOTOR_RELEASE_PATH_local RELEASE_PATHS.local &&
-                create_DRIVERS_RELEASE_LIBS_local RELEASE_LIBS.local
+                create_AXIS_DRIVERS_RELEASE_LIBS_local RELEASE_LIBS.local
             )  &&
             make 
         )
