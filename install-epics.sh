@@ -145,7 +145,7 @@ create_BASE_SUPPORT_RELEASE_PATH_local()
   echo PWD=$PWD file=$file &&
   cat >$file <<EOF
 EPICS_BASE  = $EPICS_ROOT/base-${EPICS_BASE_VER}
-SUPPORT     = \$(EPICS_BASE)/../support
+SUPPORT     = \$(EPICS_BASE)/../modules
 EOF
 }
   
@@ -164,7 +164,23 @@ create_ASYN_MOTOR_RELEASE_LIBS_local()
   echo PWD=$PWD file=$file &&
   cat >$file <<EOF
 ASYN        = \$(EPICS_BASE)/../modules/$ASYN_VER_X_Y
+SUPPORT     = \$(EPICS_BASE)/../modules
 EOF
+  if test -z "$BUSY_VER_X_Y"; then
+    echo BUSY=                         >>$file
+  fi &&
+  if test -z "$IPAC_VER_X_Y"; then
+    echo IPAC=                         >>$file
+  fi &&
+  if test -z "$SEQ_VER_X_Y"; then
+    echo SEQ=                          >>$file
+  fi &&
+  if test -z "$SNCSEQ_VER_X_Y"; then
+    echo SNCSEQ=                       >>$file
+  fi
+  if test -z "$SSCAN_VER_X_Y"; then
+    echo SSCAN=                        >>$file
+  fi
 }
   
 create_MOTOR_DRIVERS_RELEASE_LIBS_local()
@@ -290,25 +306,6 @@ run_make_in_dir()
   )
 }
 
-install_asyn_ver()
-{
-  echo install_axis_from_synapps
-  asyndir="$1"/
-  cd $EPICS_ROOT/modules &&
-  if test -L asyn; then
-    echo $RM asyn &&
-    $RM asyn
-  fi &&
-  test -d $asyndir || {
-    echo >&2 PWD=$PWD Can not $LN -sv $asyndir asyn
-    exit 1
-  }
-  $LN -sv $asyndir asyn || {
-    echo >&2 Can not $LN -sv $asyndir asyn
-    exit 1
-  }
-}
-
 install_axis_X_Y ()
 {
   echo install_axis_X_Y
@@ -355,6 +352,66 @@ install_axis_X_Y ()
   }
 }
 
+install_asyn_X_Y()
+{
+  (
+    #Note1: asyn should be under modules/
+    cd $EPICS_ROOT/modules &&
+      if ! test -d $ASYN_VER_X_Y; then
+        (
+          $FSUDO git clone https://github.com/epics-modules/asyn.git $ASYN_VER_X_Y
+          cd $ASYN_VER_X_Y &&
+          $FSUDO git checkout $ASYN_GIT_VER
+        ) ||
+           ( $RM -rf $ASYN_VER_X_Y; false )
+      fi
+  ) &&
+  (
+    cd $EPICS_ROOT/modules/$ASYN_VER_X_Y/configure &&
+    create_BASE_SUPPORT_RELEASE_PATH_local RELEASE.$EPICS_HOST_ARCH.Common &&
+    create_ASYN_MOTOR_RELEASE_LIBS_local CONFIG_SITE.$EPICS_HOST_ARCH.Common
+  ) &&
+  (
+    run_make_in_dir $EPICS_ROOT/modules/$ASYN_VER_X_Y
+  ) || {
+    echo >&2 failed $ASYN_VER_X_Y
+    exit 1
+  }
+}
+
+install_calc_X_Y ()
+{
+  if test -n "$CALC_VER_X_Y"; then
+  (
+      (
+        #Note1: calc should be under modules/
+        cd $EPICS_ROOT/modules &&
+          if ! test -d $CALC_VER_X_Y; then
+            (
+              $FSUDO git clone https://github.com/epics-modules/calco.git $CALC_VER_X_Y
+              cd $CALC_VER_X_Y &&
+              $FSUDO git checkout $CALC_GIT_VER
+            ) ||
+               ( $RM -rf $CALC_VER_X_Y; false )
+          fi
+      ) &&
+      (
+        cd $EPICS_ROOT/modules/$CALC_VER_X_Y/configure &&
+        create_BASE_SUPPORT_RELEASE_PATH_local $LOCALFILE RELEASE.$EPICS_HOST_ARCH.Common &&
+        create_ASYN_MOTOR_RELEASE_LIBS_local CONFIG_SITE.$EPICS_HOST_ARCH.Common
+      ) &&
+      (
+        run_make_in_dir $EPICS_ROOT/modules/$CALC_VER_X_Y
+      ) || {
+        echo >&2 failed $CALC_VER_X_Y
+        exit 1
+      }
+  )
+  else
+    echo no special CALC_VER_X_Y defined
+  fi
+}
+  
 install_motor_X_Y ()
 {
   echo install_motor_X_Y
@@ -371,35 +428,38 @@ install_motor_X_Y ()
           ( $RM -rf motor; false )
       fi
   ) &&
+  (
+    MODSTOBEREMOVED=ASYN
+    cd $EPICS_ROOT/modules/motor/configure &&
+    remove_modules_from_RELEASE                                     RELEASE &&
+    echo "ASYN        = \$(EPICS_BASE)/../modules/$ASYN_VER_X_Y" >> RELEASE &&
+    create_BASE_SUPPORT_RELEASE_PATH_local RELEASE.$EPICS_HOST_ARCH.Common &&
+    create_ASYN_MOTOR_RELEASE_LIBS_local CONFIG_SITE.$EPICS_HOST_ARCH.Common &&
+    create_ASYN_MOTOR_RELEASE_LIBS_local EPICS_BASE.$EPICS_HOST_ARCH
+  ) &&
+  (
+    echo run_make_in_dir $EPICS_ROOT/modules/motor &&
+      run_make_in_dir $EPICS_ROOT/modules/motor &&
+      echo done run_make_in_dir $EPICS_ROOT/modules/motor
+  ) &&
+  (
+    for d in $EPICS_ROOT/modules/motor/drivers/*; do
     (
-      cd $EPICS_ROOT/modules/motor/configure && {
-        create_BASE_SUPPORT_RELEASE_PATH_local RELEASE_PATHS.local &&
-          create_ASYN_MOTOR_RELEASE_LIBS_local RELEASE_LIBS.local
-      }
-    ) &&
-    (
-      echo run_make_in_dir $EPICS_ROOT/modules/motor &&
-        run_make_in_dir $EPICS_ROOT/modules/motor &&
-        echo done run_make_in_dir $EPICS_ROOT/modules/motor
-    ) &&
-    (
-      for d in $EPICS_ROOT/modules/motor/drivers/*; do
+      test -d "$d" &&
+        cd "$d" &&
         (
-          test -d "$d" &&
-            cd "$d" &&
-            (
-              echo SUB PWD=$PWD &&
-                cd configure &&
-                create_BASE_SUPPORT_RELEASE_PATH_local RELEASE_PATHS.local &&
-                create_MOTOR_DRIVERS_RELEASE_LIBS_local RELEASE_LIBS.local
-            )  &&
-            make 
-        )
-      done
-    )|| {
-      echo >&2 failed motor/drivers
-      exit 1
-    }
+          echo SUB PWD=$PWD &&
+            cd configure &&
+            create_BASE_SUPPORT_RELEASE_PATH_local RELEASE_PATHS.local &&
+            create_MOTOR_DRIVERS_RELEASE_LIBS_local RELEASE_LIBS.local
+        )  &&
+        make 
+    )
+    done
+  )|| {
+    echo >&2 failed motor/drivers
+    exit 1
+  }
 }
 
 install_streamdevice()
@@ -795,81 +855,19 @@ EOF
 fi
 
 
+#if test -z "$ASYN_VER_X_Y"; then
+#  run_make_in_dir $EPICS_ROOT/$SYNAPPS_VER_X_Y/support/asyn-*/asyn
+#fi &&
 if test -n "$ASYN_VER_X_Y"; then
-(
-    (
-      #Note1: asyn should be under modules/
-      cd $EPICS_ROOT/modules &&
-        if ! test -d $ASYN_VER_X_Y; then
-          (
-            $FSUDO git clone https://github.com/epics-modules/asyn.git $ASYN_VER_X_Y
-            cd $ASYN_VER_X_Y &&
-            $FSUDO git checkout $ASYN_GIT_VER
-          ) ||
-             ( $RM -rf $ASYN_VER_X_Y; false )
-        fi
-    ) &&
-    (
-      cd $EPICS_ROOT/modules/$ASYN_VER_X_Y/configure && {
-        for f in $(find . -name "RELEASE*" ); do
-          echo f=$f
-          fix_epics_base $f
-        done
-      }
-    ) &&
-    (
-      run_make_in_dir $EPICS_ROOT/modules/$ASYN_VER_X_Y
-    ) || {
-      echo >&2 failed $ASYN_VER_X_Y
-      exit 1
-    }
-)
+  install_asyn_X_Y
 else
   echo no special ASYN_VER_X_Y defined
-fi
-
+fi &&
 if test -n "$CALC_VER_X_Y"; then
-(
-    (
-      #Note1: calc should be under modules/
-      cd $EPICS_ROOT/modules &&
-        if ! test -d $CALC_VER_X_Y; then
-          (
-            $FSUDO git clone https://github.com/epics-modules/calco.git $CALC_VER_X_Y
-            cd $CALC_VER_X_Y &&
-            $FSUDO git checkout $CALC_GIT_VER
-          ) ||
-             ( $RM -rf $CALC_VER_X_Y; false )
-        fi
-    ) &&
-    cd $EPICS_ROOT/modules/$CALC_VER_X_Y/configure &&
-    (
-
-      LOCALFILE=RELEASE.$EPICS_HOST_ARCH.Common
-      create_BASE_SUPPORT_RELEASE_PATH_local $LOCALFILE &&
-      if test -z "$SSCAN_VER_X_Y"; then
-        echo SSCAN=                         >>$LOCALFILE
-      fi &&
-      if test -z "$SNCSEQ_VER_X_Y"; then
-        echo SNCSEQ=                        >>$LOCALFILE
-      fi
-    ) &&
-    (
-      run_make_in_dir $EPICS_ROOT/modules/$CALC_VER_X_Y
-    ) || {
-      echo >&2 failed $CALC_VER_X_Y
-      exit 1
-    }
-)
+  install_calc_X_Y
 else
   echo no special CALC_VER_X_Y defined
-fi
-
-
-if test -z "$ASYN_VER_X_Y"; then
-  run_make_in_dir $EPICS_ROOT/$SYNAPPS_VER_X_Y/support/asyn-*/asyn
 fi &&
-
 if test -n "$AXIS_GIT_VER"; then
   install_axis_X_Y
 fi &&
