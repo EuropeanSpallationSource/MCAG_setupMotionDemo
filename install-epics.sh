@@ -21,9 +21,13 @@ BASE_VER=GIT
 EPICS_BASE_GIT_VER=R${EPICS_BASE_VER}
 
 
+
 #Version for ASYN
 #ASYNVER=4-21
 ASYN_GIT_VER=R4-31
+
+#Version for calc
+CALC_GIT_VER=R3-7
 
 #AXIS_GIT_VER=master
 MOTOR_GIT_VER=master
@@ -46,6 +50,10 @@ EPICS_ROOT=$EPICS_DOWNLOAD/EPICS_BASE_${EPICS_BASE_VER}
 if test -n "$ASYN_GIT_VER"; then
   ASYN_VER_X_Y=asyn$ASYN_GIT_VER
   EPICS_ROOT=${EPICS_ROOT}_ASYN_${ASYN_GIT_VER}
+fi
+
+if test -n "$CALC_GIT_VER"; then
+  CALC_VER_X_Y=calc$ASYN_GIT_VER
 fi
 
 if test -n "$MOTOR_GIT_VER"; then
@@ -93,11 +101,11 @@ esac
 
 
 if $(echo "$EPICS_ROOT" | grep -q /usr/local); then
-	echo EPICS_ROOT=$EPICS_ROOT
-	echo EPICS_DOWNLOAD=$EPICS_DOWNLOAD
-	if ! test -w "$EPICS_DOWNLOAD"; then
-		FSUDO=sudo
-	fi
+  echo EPICS_ROOT=$EPICS_ROOT
+  echo EPICS_DOWNLOAD=$EPICS_DOWNLOAD
+  if ! test -w "$EPICS_DOWNLOAD"; then
+    FSUDO=sudo
+  fi
 fi
 
 CP="$FSUDO cp"
@@ -134,18 +142,18 @@ export APTGET
 create_BASE_SUPPORT_RELEASE_PATH_local()
 {
   file=$1 &&
-	echo PWD=$PWD file=$file &&
-	cat >$file <<EOF
+  echo PWD=$PWD file=$file &&
+  cat >$file <<EOF
 EPICS_BASE  = $EPICS_ROOT/base-${EPICS_BASE_VER}
 SUPPORT     = \$(EPICS_BASE)/../support
 EOF
 }
-	
+  
 create_ASYN_AXIS_RELEASE_LIBS_local()
 {
   file=$1 &&
-	echo PWD=$PWD file=$file &&
-	cat >$file <<EOF
+  echo PWD=$PWD file=$file &&
+  cat >$file <<EOF
 ASYN        = \$(EPICS_BASE)/../modules/$ASYN_VER_X_Y
 EOF
 }
@@ -153,17 +161,17 @@ EOF
 create_ASYN_MOTOR_RELEASE_LIBS_local()
 {
   file=$1 &&
-	echo PWD=$PWD file=$file &&
-	cat >$file <<EOF
+  echo PWD=$PWD file=$file &&
+  cat >$file <<EOF
 ASYN        = \$(EPICS_BASE)/../modules/$ASYN_VER_X_Y
 EOF
 }
-	
+  
 create_MOTOR_DRIVERS_RELEASE_LIBS_local()
 {
   file=$1 &&
-	echo PWD=$PWD file=$file &&
-	cat >$file <<EOF
+  echo PWD=$PWD file=$file &&
+  cat >$file <<EOF
 ASYN        = \$(EPICS_BASE)/../modules/$ASYN_VER_X_Y
 MOTOR       = \$(EPICS_BASE)/../modules/motor
 EOF
@@ -172,8 +180,8 @@ EOF
 create_AXIS_DRIVERS_RELEASE_LIBS_local()
 {
   file=$1 &&
-	echo PWD=$PWD file=$file &&
-	cat >$file <<EOF
+  echo PWD=$PWD file=$file &&
+  cat >$file <<EOF
 ASYN        = \$(EPICS_BASE)/../modules/$ASYN_VER_X_Y
 AXIS        = \$(EPICS_BASE)/../modules/axis
 EOF
@@ -304,23 +312,23 @@ install_asyn_ver()
 install_axis_X_Y ()
 {
   echo install_axis_X_Y
-	. $EPICS_ROOT/.epics.$EPICS_HOST_ARCH || {
-		echo >&2 "can include $EPICS_ROOT/.epics.$EPICS_HOST_ARCH"
-		exit 1
-	}
+  . $EPICS_ROOT/.epics.$EPICS_HOST_ARCH || {
+    echo >&2 "can include $EPICS_ROOT/.epics.$EPICS_HOST_ARCH"
+    exit 1
+  }
   (
     cd $EPICS_ROOT/modules &&
       if ! test -d axis; then
-				(
-					$FSUDO git clone --recursive --branch $AXIS_GIT_VER https://github.com/EPICS-motor-wg/axis.git axis
-				)||
+        (
+          $FSUDO git clone --recursive --branch $AXIS_GIT_VER https://github.com/EPICS-motor-wg/axis.git axis
+        )||
           ( $RM -rf axis; false )
       fi
   ) &&
-	(
+  (
     cd $EPICS_ROOT/modules/axis/configure && {
-			create_BASE_SUPPORT_RELEASE_PATH_local RELEASE_PATHS.local &&
-			create_ASYN_AXIS_RELEASE_LIBS_local RELEASE_LIBS.local
+      create_BASE_SUPPORT_RELEASE_PATH_local RELEASE_PATHS.local &&
+      create_ASYN_AXIS_RELEASE_LIBS_local RELEASE_LIBS.local
     }
   ) &&
   (
@@ -328,20 +336,20 @@ install_axis_X_Y ()
       run_make_in_dir $EPICS_ROOT/modules/axis/axisCore &&
       echo done run_make_in_dir $EPICS_ROOT/modules/axisCore
   ) &&
-	(
-		for d in $EPICS_ROOT/modules/axis/drivers/*; do
-			(
-				cd "$d" &&
-					(
-						echo SUB PWD=$PWD &&
-						cd configure &&
-						create_BASE_SUPPORT_RELEASE_PATH_local RELEASE_PATHS.local &&
-						create_AXIS_DRIVERS_RELEASE_LIBS_local RELEASE_LIBS.local
-					)  &&
-				make 
-			)
-		done
-	)|| {
+  (
+    for d in $EPICS_ROOT/modules/axis/drivers/*; do
+      (
+        cd "$d" &&
+          (
+            echo SUB PWD=$PWD &&
+            cd configure &&
+            create_BASE_SUPPORT_RELEASE_PATH_local RELEASE_PATHS.local &&
+            create_AXIS_DRIVERS_RELEASE_LIBS_local RELEASE_LIBS.local
+          )  &&
+        make 
+      )
+    done
+  )|| {
     echo >&2 failed axis/drivers
     exit 1
   }
@@ -358,27 +366,27 @@ install_motor_X_Y ()
     cd $EPICS_ROOT/modules &&
       if ! test -d motor; then
         (
-          $FSUDO git clone --recursive --branch $MOTOR_GIT_VER https://github.com/epics-modules/motor.git motor
+          $FSUDO git clone --recursive --branch $MOTOR_GIT_VER https://github.com/europeanspallationsource/motor.git motor
         )||
           ( $RM -rf motor; false )
       fi
   ) &&
-		(
-			cd $EPICS_ROOT/modules/motor/configure && {
+    (
+      cd $EPICS_ROOT/modules/motor/configure && {
         create_BASE_SUPPORT_RELEASE_PATH_local RELEASE_PATHS.local &&
-					create_ASYN_MOTOR_RELEASE_LIBS_local RELEASE_LIBS.local
-			}
-		) &&
-		(
-			echo run_make_in_dir $EPICS_ROOT/modules/motor &&
-				run_make_in_dir $EPICS_ROOT/modules/motor &&
-				echo done run_make_in_dir $EPICS_ROOT/modules/motor
-		) &&
+          create_ASYN_MOTOR_RELEASE_LIBS_local RELEASE_LIBS.local
+      }
+    ) &&
+    (
+      echo run_make_in_dir $EPICS_ROOT/modules/motor &&
+        run_make_in_dir $EPICS_ROOT/modules/motor &&
+        echo done run_make_in_dir $EPICS_ROOT/modules/motor
+    ) &&
     (
       for d in $EPICS_ROOT/modules/motor/drivers/*; do
         (
           test -d "$d" &&
-						cd "$d" &&
+            cd "$d" &&
             (
               echo SUB PWD=$PWD &&
                 cd configure &&
@@ -389,9 +397,9 @@ install_motor_X_Y ()
         )
       done
     )|| {
-			echo >&2 failed motor/drivers
-			exit 1
-		}
+      echo >&2 failed motor/drivers
+      exit 1
+    }
 }
 
 install_streamdevice()
@@ -583,20 +591,20 @@ fi  &&
 
 
 if test X = "X$EPICS_HOST_ARCH"; then
-	UNAME=$(uname)
-	echo UNAME=$UNAME EPICS_HOST_ARCH=$EPICS_HOST_ARCH
-	case $UNAME in
+  UNAME=$(uname)
+  echo UNAME=$UNAME EPICS_HOST_ARCH=$EPICS_HOST_ARCH
+  case $UNAME in
   MINGW64_NT-6.1)
-		EPICS_HOST_ARCH=windows-x64-mingw
+    EPICS_HOST_ARCH=windows-x64-mingw
     ;;
   *)
-		EPICS_HOST_ARCH=$($EPICS_ROOT/base-${EPICS_BASE_VER}/startup/EpicsHostArch) || {
-			echo >&2 EPICS_HOST_ARCH failed
-			exit 1
-		}
-		;;
-	esac
-	echo UNAME=$UNAME EPICS_HOST_ARCH=$EPICS_HOST_ARCH
+    EPICS_HOST_ARCH=$($EPICS_ROOT/base-${EPICS_BASE_VER}/startup/EpicsHostArch) || {
+      echo >&2 EPICS_HOST_ARCH failed
+      exit 1
+    }
+    ;;
+  esac
+  echo UNAME=$UNAME EPICS_HOST_ARCH=$EPICS_HOST_ARCH
 fi
 # here we know the EPICS_HOST_ARCH
 export EPICS_HOST_ARCH
@@ -793,11 +801,11 @@ if test -n "$ASYN_VER_X_Y"; then
       #Note1: asyn should be under modules/
       cd $EPICS_ROOT/modules &&
         if ! test -d $ASYN_VER_X_Y; then
-					(
-						$FSUDO git clone https://github.com/epics-modules/asyn.git $ASYN_VER_X_Y
-						cd $ASYN_VER_X_Y &&
-						$FSUDO git checkout $ASYN_GIT_VER
-					) ||
+          (
+            $FSUDO git clone https://github.com/epics-modules/asyn.git $ASYN_VER_X_Y
+            cd $ASYN_VER_X_Y &&
+            $FSUDO git checkout $ASYN_GIT_VER
+          ) ||
              ( $RM -rf $ASYN_VER_X_Y; false )
         fi
     ) &&
@@ -820,16 +828,53 @@ else
   echo no special ASYN_VER_X_Y defined
 fi
 
+if test -n "$CALC_VER_X_Y"; then
+(
+    (
+      #Note1: calc should be under modules/
+      cd $EPICS_ROOT/modules &&
+        if ! test -d $CALC_VER_X_Y; then
+          (
+            $FSUDO git clone https://github.com/epics-modules/calco.git $CALC_VER_X_Y
+            cd $CALC_VER_X_Y &&
+            $FSUDO git checkout $CALC_GIT_VER
+          ) ||
+             ( $RM -rf $CALC_VER_X_Y; false )
+        fi
+    ) &&
+    cd $EPICS_ROOT/modules/$CALC_VER_X_Y/configure &&
+    (
+
+      LOCALFILE=RELEASE.$EPICS_HOST_ARCH.Common
+      create_BASE_SUPPORT_RELEASE_PATH_local $LOCALFILE &&
+      if test -z "$SSCAN_VER_X_Y"; then
+        echo SSCAN=                         >>$LOCALFILE
+      fi &&
+      if test -z "$SNCSEQ_VER_X_Y"; then
+        echo SNCSEQ=                        >>$LOCALFILE
+      fi
+    ) &&
+    (
+      run_make_in_dir $EPICS_ROOT/modules/$CALC_VER_X_Y
+    ) || {
+      echo >&2 failed $CALC_VER_X_Y
+      exit 1
+    }
+)
+else
+  echo no special CALC_VER_X_Y defined
+fi
+
 
 if test -z "$ASYN_VER_X_Y"; then
   run_make_in_dir $EPICS_ROOT/$SYNAPPS_VER_X_Y/support/asyn-*/asyn
 fi &&
 
 if test -n "$AXIS_GIT_VER"; then
-	install_axis_X_Y
+  install_axis_X_Y
 fi &&
 if test -n "$MOTOR_GIT_VER"; then
-	install_motor_X_Y
+  install_motor_X_Y
 fi &&
 
 install_streamdevice &&
