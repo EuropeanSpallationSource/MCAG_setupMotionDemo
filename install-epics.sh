@@ -388,7 +388,7 @@ install_calc_X_Y ()
         cd $EPICS_ROOT/modules &&
           if ! test -d $CALC_VER_X_Y; then
             (
-              $FSUDO git clone https://github.com/epics-modules/calco.git $CALC_VER_X_Y
+              $FSUDO git clone https://github.com/epics-modules/calc.git $CALC_VER_X_Y
               cd $CALC_VER_X_Y &&
               $FSUDO git checkout $CALC_GIT_VER
             ) ||
@@ -431,11 +431,8 @@ install_motor_X_Y ()
   (
     MODSTOBEREMOVED=ASYN
     cd $EPICS_ROOT/modules/motor/configure &&
-    remove_modules_from_RELEASE                                     RELEASE &&
-    echo "ASYN        = \$(EPICS_BASE)/../modules/$ASYN_VER_X_Y" >> RELEASE &&
-    create_BASE_SUPPORT_RELEASE_PATH_local RELEASE.$EPICS_HOST_ARCH.Common &&
-    create_ASYN_MOTOR_RELEASE_LIBS_local CONFIG_SITE.$EPICS_HOST_ARCH.Common &&
-    create_ASYN_MOTOR_RELEASE_LIBS_local EPICS_BASE.$EPICS_HOST_ARCH
+    create_BASE_SUPPORT_RELEASE_PATH_local RELEASE_PATHS.local &&
+    create_MOTOR_DRIVERS_RELEASE_LIBS_local RELEASE_LIBS.local
   ) &&
   (
     echo run_make_in_dir $EPICS_ROOT/modules/motor &&
@@ -445,7 +442,7 @@ install_motor_X_Y ()
   (
     for d in $EPICS_ROOT/modules/motor/drivers/*; do
     (
-      test -d "$d" &&
+      if test -d "$d"; then
         cd "$d" &&
         (
           echo SUB PWD=$PWD &&
@@ -453,7 +450,8 @@ install_motor_X_Y ()
             create_BASE_SUPPORT_RELEASE_PATH_local RELEASE_PATHS.local &&
             create_MOTOR_DRIVERS_RELEASE_LIBS_local RELEASE_LIBS.local
         )  &&
-        make 
+        make
+      fi
     )
     done
   )|| {
