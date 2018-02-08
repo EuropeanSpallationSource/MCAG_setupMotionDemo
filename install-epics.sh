@@ -31,7 +31,7 @@ CALC_GIT_VER=R3-7
 
 #AXIS_GIT_VER=master
 MOTOR_GIT_VER=master
-MOTOR_GIT_VER=torsten/180207-1046-all-from-axis-WIP-important-power-redone
+MOTOR_GIT_VER=torsten/180208-1256-all-from-axis-WIP-important-power-redone
 
 
 # Debug version for e.g. kdbg
