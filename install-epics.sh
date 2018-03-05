@@ -191,6 +191,12 @@ create_MOTOR_DRIVERS_RELEASE_LIBS_local()
 ASYN        = \$(EPICS_BASE)/../modules/$ASYN_VER_X_Y
 MOTOR       = \$(EPICS_BASE)/../modules/motor
 EOF
+if test -n "$CALC_GIT_VER"; then
+  cat >>$file <<EOF
+CALC        = \$(EPICS_BASE)/../modules/$CALC_VER_X_Y
+EOF
+fi
+	
 }
 
 disable_MOTOR_DRIVERS()
