@@ -380,7 +380,7 @@ install_axis_X_Y ()
   (
     for d in $EPICS_ROOT/modules/axis/drivers/*; do
       (
-        cd "$d" &&
+        test -d "$d"&& cd "$d" &&
           (
             echo SUB PWD=$PWD &&
             cd configure &&
@@ -749,8 +749,6 @@ else
 fi
 export PATH=\$PATH:\$EPICS_BASE_BIN:\$EPICS_EXT_BIN
 export SUPPORT=\${EPICS_ROOT}/support
-export ASYN=\${EPICS_BASE}/asyn
-export BUSY=\${SUPPORT}/busy-1-6
 EOF
 . $BASH_ALIAS_EPICS &&
 set | grep EPICS &&
