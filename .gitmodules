@@ -7,3 +7,12 @@
 [submodule "epics/modules/motor"]
 	path = epics/modules/motor
 	url = https://github.com/europeanspallationsource/motor.git
+[submodule "EthercatMC"]
+	path = EthercatMC
+	url = https://bitbucket.org/europeanspallationsource/m-epics-EthercatMC.git
+[submodule "calc"]
+	path = calc
+	url = https://github.com/epics-modules/calc.git
+[submodule "epics/modules/calc"]
+	path = epics/modules/calc
+	url = https://github.com/epics-modules/calc.git

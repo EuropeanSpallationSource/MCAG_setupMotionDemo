@@ -145,8 +145,8 @@ if test -n "$CALC_GIT_VER"; then
 CALC        = \$(EPICS_BASE)/../modules/$CALC_VER_X_Y
 EOF
 fi
-  
 }
+
 #############
 create_ASYN_MOTOR_RELEASE_LIBS_local()
 {
@@ -222,7 +222,7 @@ compileEPICSmodule()
   (
     cd $EPICS_ROOT/modules/$EPICS_MODULE/configure &&
       case $EPICS_MODULE in
-      *asyn*)
+      *asyn*|*calc*)
         create_BASE_SUPPORT_RELEASE_PATH_local   RELEASE.$EPICS_HOST_ARCH.Common &&
         create_ASYN_MOTOR_RELEASE_LIBS_local     CONFIG_SITE.$EPICS_HOST_ARCH.Common
         ;;
