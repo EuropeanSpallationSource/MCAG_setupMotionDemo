@@ -137,7 +137,7 @@ create_MOTOR_DRIVERS_RELEASE_LIBS_local()
   file=$1 &&
   echo PWD=$PWD file=$file &&
   cat >$file <<EOF
-ASYN        = \$(EPICS_BASE)/../modules/$ASYN_VER_X_Y
+ASYN        = \$(EPICS_BASE)/../modules/asyn
 MOTOR       = \$(EPICS_BASE)/../modules/motor
 EOF
 if test -n "$CALC_GIT_VER"; then
@@ -230,6 +230,10 @@ compileEPICSmodule()
         create_BASE_SUPPORT_RELEASE_PATH_local   RELEASE_PATHS.local &&
         create_MOTOR_DRIVERS_RELEASE_LIBS_local  RELEASE_LIBS.local &&
         disable_MOTOR_DRIVERS                    RELEASE_LIBS.local
+        ;;
+      *EthercatMC*)
+        create_BASE_SUPPORT_RELEASE_PATH_local   RELEASE_PATHS.local &&
+        create_MOTOR_DRIVERS_RELEASE_LIBS_local  RELEASE_LIBS.local
         ;;
       *)
         echo >&2 unknown module $EPICS_MODULE

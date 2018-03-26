@@ -16,3 +16,6 @@
 [submodule "epics/modules/calc"]
 	path = epics/modules/calc
 	url = https://github.com/epics-modules/calc.git
+[submodule "epics/modules/EthercatMC"]
+	path = epics/modules/EthercatMC
+	url = https://bitbucket.org/europeanspallationsource/m-epics-EthercatMC.git
