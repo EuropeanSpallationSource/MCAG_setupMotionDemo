@@ -4,3 +4,6 @@
 [submodule "epics/modules/asyn"]
 	path = epics/modules/asyn
 	url = https://github.com/epics-modules/asyn.git
+[submodule "epics/modules/motor"]
+	path = epics/modules/motor
+	url = https://github.com/europeanspallationsource/motor.git

@@ -132,12 +132,29 @@ EOF
 }
   
 #############
+create_MOTOR_DRIVERS_RELEASE_LIBS_local()
+{
+  file=$1 &&
+  echo PWD=$PWD file=$file &&
+  cat >$file <<EOF
+ASYN        = \$(EPICS_BASE)/../modules/$ASYN_VER_X_Y
+MOTOR       = \$(EPICS_BASE)/../modules/motor
+EOF
+if test -n "$CALC_GIT_VER"; then
+  cat >>$file <<EOF
+CALC        = \$(EPICS_BASE)/../modules/$CALC_VER_X_Y
+EOF
+fi
+  
+}
+#############
 create_ASYN_MOTOR_RELEASE_LIBS_local()
 {
   file=$1 &&
   echo PWD=$PWD file=$file &&
   cat >$file <<EOF
 ASYN        = \$(EPICS_BASE)/../modules/asyn
+MOTOR       = \$(EPICS_BASE)/../modules/motor
 SUPPORT     = \$(EPICS_BASE)/../modules
 EOF
   if test -z "$BUSY_VER_X_Y"; then
@@ -155,6 +172,76 @@ EOF
   if test -z "$SSCAN_VER_X_Y"; then
     echo SSCAN=                        >>$file
   fi
+}
+
+#############
+disable_MOTOR_DRIVERS()
+{
+  file=$1 &&
+  echo PWD=$PWD file=$file &&
+  cat >>$file <<EOF
+NO_MOTOR_DELTATAUSRC = y
+NO_MOTOR_OMSSRC = y
+NO_MOTOR_OMSASYNSRC = y
+NO_MOTOR_NEWPORTSRC = y
+NO_MOTOR_IMSSRC = y
+NO_MOTOR_ACSSRC = y
+NO_MOTOR_MCLENNANSRC = y
+NO_MOTOR_PISRC = y
+NO_MOTOR_PIGCS2SRC = y
+NO_MOTOR_MICROMOSRC = y
+NO_MOTOR_MICOSSRC = y
+NO_MOTOR_FAULHABERSRC = y
+NO_MOTOR_PC6KSRC = y
+NO_MOTOR_NEWFOCUSSRC = y
+NO_MOTOR_ACSTECH80SRC = y
+NO_MOTOR_ORIELSRC = y
+NO_MOTOR_THORLABSSRC = y
+NO_MOTOR_SMARTMOTORSRC = y
+NO_MOTOR_PIJENASRC = y
+NO_MOTOR_KOHZUSRC = y
+NO_MOTOR_ATTOCUBESRC = y
+NO_MOTOR_AEROTECHSRC = y
+NO_MOTOR_HYTECSRC = y
+NO_MOTOR_ACRSRC = y
+NO_MOTOR_SMARACTMCSSRC = y
+NO_MOTOR_NPOINTSRC = y
+NO_MOTOR_MICRONIXSRC = y
+NO_MOTOR_PHYTRONSRC = y
+NO_MOTOR_AMCISRC = y
+NO_MOTOR_MXMOTORSRC = y
+EOF
+}
+
+
+
+#############
+compileEPICSmodule()
+{
+  EPICS_MODULE=$1
+  (
+    cd $EPICS_ROOT/modules/$EPICS_MODULE/configure &&
+      case $EPICS_MODULE in
+      *asyn*)
+        create_BASE_SUPPORT_RELEASE_PATH_local   RELEASE.$EPICS_HOST_ARCH.Common &&
+        create_ASYN_MOTOR_RELEASE_LIBS_local     CONFIG_SITE.$EPICS_HOST_ARCH.Common
+        ;;
+      *motor*)
+        create_BASE_SUPPORT_RELEASE_PATH_local   RELEASE_PATHS.local &&
+        create_MOTOR_DRIVERS_RELEASE_LIBS_local  RELEASE_LIBS.local &&
+        disable_MOTOR_DRIVERS                    RELEASE_LIBS.local
+        ;;
+      *)
+        echo >&2 unknown module $EPICS_MODULE
+        exit 1
+      esac
+  ) &&
+  (
+    run_make_in_dir $EPICS_ROOT/modules/$EPICS_MODULE
+  ) || {
+    echo >&2 failed $EPICS_MODULE
+    exit 1
+  }
 }
 
 #########################################################
@@ -197,20 +284,26 @@ export EPICS_BASE_BIN EPICS_EXT EPICS_EXT_LIB EPICS_EXT_BIN PATH LD_LIBRARY_PATH
 # Automatic install option for scripted installation
 INSTALL_EPICS=""
 
-while getopts ":i:" opt; do
+while getopts ":im:" opt; do
   case $opt in
     i)
       INSTALL_EPICS=$OPTARG
       ;;
+    m)
+      EPICS_MODULE=$OPTARG
+      INSTALL_EPICS=y
+      ;;
     :)
       echo "Option -i needs an argument (y for automatic installation of EPICS, n for skipping installation)."
+      echo "Option -m needs the module to compile as an argument"
       exit 1
    esac
 done
 
+
 if test -z "$INSTALL_EPICS"; then
   echo EPICS_ROOT=$EPICS_ROOT
-  echo Do you want to install EPICS in $EPICS_ROOT ? [y/N]
+  echo Do you want to compile EPICS in $EPICS_ROOT ? [y/N]
   read yesno
   INSTALL_EPICS=$yesno
 fi
@@ -239,6 +332,15 @@ RM="$FSUDO rm"
 
 export CP FSUDO LN MKDIR MV RM SUDO
 
+
+if test -n "$EPICS_MODULE"; then
+  . $BASH_ALIAS_EPICS &&
+  compileEPICSmodule $EPICS_MODULE || {
+    echo >&2 failed $EPICS_MODULE
+    exit 1
+  }
+  exit
+fi
 
 
 
@@ -309,6 +411,7 @@ $CP $BASH_ALIAS_EPICS ../.. &&
     exit 1
   }
 ) &&
+
 run_make_in_dir ${EPICS_BASE} || {
   echo >&2 failed in ${EPICS_BASE}
   exit 1
@@ -316,15 +419,9 @@ run_make_in_dir ${EPICS_BASE} || {
 
 #################################
 # compile asyn
-for EPICS_MODULE in asyn; do
-  (
-    cd $EPICS_ROOT/modules/$EPICS_MODULE/configure &&
-    create_BASE_SUPPORT_RELEASE_PATH_local RELEASE.$EPICS_HOST_ARCH.Common &&
-    create_ASYN_MOTOR_RELEASE_LIBS_local CONFIG_SITE.$EPICS_HOST_ARCH.Common
-  ) &&
-  (
-    run_make_in_dir $EPICS_ROOT/modules/$EPICS_MODULE
-  ) || {
+for EPICS_MODULE in asyn motor; do
+  compileEPICSmodule $EPICS_MODULE
+  || {
     echo >&2 failed $EPICS_MODULE
     exit 1
   }
