@@ -120,6 +120,42 @@ EOF
   )
 }
 
+#############
+create_BASE_SUPPORT_RELEASE_PATH_local()
+{
+  file=$1 &&
+  echo PWD=$PWD file=$file &&
+  cat >$file <<EOF
+EPICS_BASE  = $EPICS_ROOT/base
+SUPPORT     = \$(EPICS_BASE)/../modules
+EOF
+}
+  
+#############
+create_ASYN_MOTOR_RELEASE_LIBS_local()
+{
+  file=$1 &&
+  echo PWD=$PWD file=$file &&
+  cat >$file <<EOF
+ASYN        = \$(EPICS_BASE)/../modules/asyn
+SUPPORT     = \$(EPICS_BASE)/../modules
+EOF
+  if test -z "$BUSY_VER_X_Y"; then
+    echo BUSY=                         >>$file
+  fi &&
+  if test -z "$IPAC_VER_X_Y"; then
+    echo IPAC=                         >>$file
+  fi &&
+  if test -z "$SEQ_VER_X_Y"; then
+    echo SEQ=                          >>$file
+  fi &&
+  if test -z "$SNCSEQ_VER_X_Y"; then
+    echo SNCSEQ=                       >>$file
+  fi
+  if test -z "$SSCAN_VER_X_Y"; then
+    echo SSCAN=                        >>$file
+  fi
+}
 
 #########################################################
 # main
@@ -273,6 +309,28 @@ $CP $BASH_ALIAS_EPICS ../.. &&
     exit 1
   }
 ) &&
+run_make_in_dir ${EPICS_BASE} || {
+  echo >&2 failed in ${EPICS_BASE}
+  exit 1
+}
+
+#################################
+# compile asyn
+for EPICS_MODULE in asyn; do
+  (
+    cd $EPICS_ROOT/modules/$EPICS_MODULE/configure &&
+    create_BASE_SUPPORT_RELEASE_PATH_local RELEASE.$EPICS_HOST_ARCH.Common &&
+    create_ASYN_MOTOR_RELEASE_LIBS_local CONFIG_SITE.$EPICS_HOST_ARCH.Common
+  ) &&
+  (
+    run_make_in_dir $EPICS_ROOT/modules/$EPICS_MODULE
+  ) || {
+    echo >&2 failed $EPICS_MODULE
+    exit 1
+  }
+done
+
+
 echo install $EPICS_ROOT OK
 
 
