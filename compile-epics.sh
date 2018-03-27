@@ -140,9 +140,9 @@ create_MOTOR_DRIVERS_RELEASE_LIBS_local()
 ASYN        = \$(EPICS_BASE)/../modules/asyn
 MOTOR       = \$(EPICS_BASE)/../modules/motor
 EOF
-if test -n "$CALC_GIT_VER"; then
+if test -d "$EPICS_BASE/../modules/calc"; then
   cat >>$file <<EOF
-CALC        = \$(EPICS_BASE)/../modules/$CALC_VER_X_Y
+CALC        = \$(EPICS_BASE)/../modules/calc
 EOF
 fi
 }
@@ -288,7 +288,7 @@ export EPICS_BASE_BIN EPICS_EXT EPICS_EXT_LIB EPICS_EXT_BIN PATH LD_LIBRARY_PATH
 # Automatic install option for scripted installation
 INSTALL_EPICS=""
 
-while getopts ":im:" opt; do
+while getopts ":i:m" opt; do
   case $opt in
     i)
       INSTALL_EPICS=$OPTARG
@@ -423,9 +423,8 @@ run_make_in_dir ${EPICS_BASE} || {
 
 #################################
 # compile asyn
-for EPICS_MODULE in asyn motor; do
-  compileEPICSmodule $EPICS_MODULE
-  || {
+for EPICS_MODULE in asyn motor EthercatMC ; do
+  compileEPICSmodule $EPICS_MODULE || {
     echo >&2 failed $EPICS_MODULE
     exit 1
   }
