@@ -158,6 +158,35 @@ MOTOR       = \$(EPICS_BASE)/../modules/motor
 SUPPORT     = \$(EPICS_BASE)/../modules
 EOF
   if test -z "$BUSY_VER_X_Y"; then
+    echo "BUSY ="                      >>$file
+  fi &&
+  if test -z "$IPAC_VER_X_Y"; then
+    echo "IPAC = "                     >>$file
+  fi &&
+  if test -z "$SEQ_VER_X_Y"; then
+    echo "SEQ ="                       >>$file
+  fi &&
+  if test -z "$SNCSEQ_VER_X_Y"; then
+    echo "SNCSEQ ="                    >>$file
+  fi
+  if test -z "$SSCAN_VER_X_Y"; then
+    echo "SSCAN ="                     >>$file
+  fi
+}
+
+#############
+create_BASE_ASYN_MOTOR_RELEASE_LIBS_local()
+{
+  file=$1 &&
+  echo PWD=$PWD file=$file &&
+  cat >$file <<EOF
+EPICS_BASE  = $EPICS_ROOT/base
+SUPPORT     = \$(EPICS_BASE)/../modules
+ASYN        = \$(EPICS_BASE)/../modules/asyn
+MOTOR       = \$(EPICS_BASE)/../modules/motor
+SUPPORT     = \$(EPICS_BASE)/../modules
+EOF
+  if test -z "$BUSY_VER_X_Y"; then
     echo BUSY=                         >>$file
   fi &&
   if test -z "$IPAC_VER_X_Y"; then
@@ -221,10 +250,10 @@ compileEPICSmodule()
   EPICS_MODULE=$1
   (
     cd $EPICS_ROOT/modules/$EPICS_MODULE/configure &&
+      git clean -f &&
       case $EPICS_MODULE in
       *asyn*|*calc*)
-        create_BASE_SUPPORT_RELEASE_PATH_local   RELEASE.$EPICS_HOST_ARCH.Common &&
-        create_ASYN_MOTOR_RELEASE_LIBS_local     CONFIG_SITE.$EPICS_HOST_ARCH.Common
+        create_BASE_ASYN_MOTOR_RELEASE_LIBS_local RELEASE
         ;;
       *motor*)
         create_BASE_SUPPORT_RELEASE_PATH_local   RELEASE_PATHS.local &&
@@ -423,7 +452,7 @@ run_make_in_dir ${EPICS_BASE} || {
 
 #################################
 # compile asyn
-for EPICS_MODULE in asyn motor EthercatMC ; do
+for EPICS_MODULE in asyn calc motor EthercatMC ; do
   compileEPICSmodule $EPICS_MODULE || {
     echo >&2 failed $EPICS_MODULE
     exit 1
