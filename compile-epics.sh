@@ -281,6 +281,15 @@ compileEPICSmodule()
 # main
 #
 
+##
+if ! test -d $EPICS_BASE/startup; then
+  git submodule init &&
+  git submodule update || {
+    echo >&2 error with submodule
+    exit 1
+  }
+fi
+
 
 # Set up EPICS_HOST_ARCH
 UNAME=$(uname)
