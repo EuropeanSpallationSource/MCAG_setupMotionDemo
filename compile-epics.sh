@@ -7,6 +7,25 @@ EPICS_ENV_PATH=
 EPICS_HOST_ARCH=
 EPICS_MODULES_PATH=
 
+if uname -a | egrep "CYGWIN|MING" >/dev/null; then
+  SUDO=
+else
+  SUDO=sudo
+fi
+APTGET=/bin/false
+if type apt-get >/dev/null 2>/dev/null; then
+  APTGET="$SUDO apt-get install"
+fi
+if type yum >/dev/null 2>/dev/null; then
+  APTGET="$SUDO /usr/bin/yum install"
+fi
+# port (Mac Ports)
+if test -x /opt/local/bin/port; then
+  APTGET="$SUDO port install"
+fi
+echo APTGET=$APTGET
+export APTGET
+
 uname_s=$(uname -s 2>/dev/null || echo unknown)
 uname_m=$(uname -m 2>/dev/null || echo unknown)
 
@@ -440,7 +459,9 @@ $CP $BASH_ALIAS_EPICS ../.. &&
     test -r /usr/include/readline.h ||
     $APTGET readline-devel ||
     $APTGET libreadline-dev ||
-    {
+    $APTGET libreadline6-dev ||
+
+		{
       echo >&2 can not install readline-devel
       exit 1
     }
