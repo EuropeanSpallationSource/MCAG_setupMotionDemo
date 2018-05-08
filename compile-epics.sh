@@ -269,7 +269,7 @@ EOF
 
 
 #############
-compileEPICSmodule()
+configureEPICSmodule()
 {
   EPICS_MODULE=$1
   (
@@ -293,7 +293,12 @@ compileEPICSmodule()
         echo >&2 compileEPICSmodule: unsupported module $EPICS_MODULE
         exit 1
       esac
-  ) &&
+  )
+}
+
+compileEPICSmodule()
+{
+  EPICS_MODULE=$1
   (
     run_make_in_dir $EPICS_ROOT/modules/$EPICS_MODULE
   ) || {
@@ -404,7 +409,8 @@ export CP FSUDO LN MKDIR MV RM SUDO
 
 if test -n "$EPICS_MODULE"; then
   . $BASH_ALIAS_EPICS &&
-  compileEPICSmodule $EPICS_MODULE || {
+    configureEPICSmodule &&
+    compileEPICSmodule $EPICS_MODULE || {
     echo >&2 failed $EPICS_MODULE
     exit 1
   }
@@ -469,7 +475,7 @@ $CP $BASH_ALIAS_EPICS ../.. &&
     $APTGET libreadline-dev ||
     $APTGET libreadline6-dev ||
 
-		{
+    {
       echo >&2 can not install readline-devel
       exit 1
     }
@@ -489,6 +495,14 @@ run_make_in_dir ${EPICS_BASE} || {
 }
 
 #################################
+# configure modules
+for EPICS_MODULE in asyn ads calc motor EthercatMC ; do
+  configureEPICSmodule $EPICS_MODULE || {
+    echo >&2 failed $EPICS_MODULE
+    exit 1
+  }
+done
+
 # compile modules
 for EPICS_MODULE in asyn ads calc motor EthercatMC ; do
   compileEPICSmodule $EPICS_MODULE || {
