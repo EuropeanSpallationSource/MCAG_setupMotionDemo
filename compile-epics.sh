@@ -164,6 +164,11 @@ if test -d "$EPICS_BASE/../modules/calc"; then
 CALC        = \$(EPICS_BASE)/../modules/calc
 EOF
 fi
+if test -d "$EPICS_BASE/../modules/ads"; then
+  cat >>$file <<EOF
+ADS         = \$(EPICS_BASE)/../modules/ads
+EOF
+fi
 }
 
 #############
@@ -268,13 +273,14 @@ compileEPICSmodule()
 {
   EPICS_MODULE=$1
   (
+    mkdir -p  $EPICS_ROOT/modules/$EPICS_MODULE/configure &&
     cd $EPICS_ROOT/modules/$EPICS_MODULE/configure &&
       git clean -f &&
       case $EPICS_MODULE in
       *asyn*|*calc*)
         create_BASE_ASYN_MOTOR_RELEASE_LIBS_local RELEASE
         ;;
-      *motor*)
+      *motor*|*ads*)
         create_BASE_SUPPORT_RELEASE_PATH_local   RELEASE_PATHS.local &&
         create_MOTOR_DRIVERS_RELEASE_LIBS_local  RELEASE_LIBS.local &&
         disable_MOTOR_DRIVERS                    RELEASE_LIBS.local
@@ -284,7 +290,7 @@ compileEPICSmodule()
         create_MOTOR_DRIVERS_RELEASE_LIBS_local  RELEASE_LIBS.local
         ;;
       *)
-        echo >&2 unknown module $EPICS_MODULE
+        echo >&2 compileEPICSmodule: unsupported module $EPICS_MODULE
         exit 1
       esac
   ) &&
@@ -345,13 +351,15 @@ export EPICS_BASE_BIN EPICS_EXT EPICS_EXT_LIB EPICS_EXT_BIN PATH LD_LIBRARY_PATH
 # Automatic install option for scripted installation
 INSTALL_EPICS=""
 
-while getopts ":i:m" opt; do
+while getopts "i:m:" opt; do
+  echo opt=$opt
   case $opt in
     i)
       INSTALL_EPICS=$OPTARG
       ;;
     m)
       EPICS_MODULE=$OPTARG
+      echo EPICS_MODULE=$EPICS_MODULE
       INSTALL_EPICS=y
       ;;
     :)
@@ -481,8 +489,8 @@ run_make_in_dir ${EPICS_BASE} || {
 }
 
 #################################
-# compile asyn
-for EPICS_MODULE in asyn calc motor EthercatMC ; do
+# compile modules
+for EPICS_MODULE in asyn ads calc motor EthercatMC ; do
   compileEPICSmodule $EPICS_MODULE || {
     echo >&2 failed $EPICS_MODULE
     exit 1
