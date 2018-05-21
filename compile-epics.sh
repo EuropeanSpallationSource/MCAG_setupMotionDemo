@@ -290,7 +290,7 @@ configureEPICSmodule()
         create_MOTOR_DRIVERS_RELEASE_LIBS_local  RELEASE_LIBS.local
         ;;
       *)
-        echo >&2 compileEPICSmodule: unsupported module $EPICS_MODULE
+        echo >&2 configureEPICSmodule: unsupported module $EPICS_MODULE
         exit 1
       esac
   )
@@ -359,6 +359,12 @@ INSTALL_EPICS=""
 while getopts "i:m:" opt; do
   echo opt=$opt
   case $opt in
+    h)
+      echo >&2 "usage $0 [options]"
+      echo >&2 "      $0 -i y # install without prompting"
+      echo >&2 "      $0 -m <module> # install <module>"
+      exit 1
+      ;;
     i)
       INSTALL_EPICS=$OPTARG
       ;;
@@ -409,7 +415,7 @@ export CP FSUDO LN MKDIR MV RM SUDO
 
 if test -n "$EPICS_MODULE"; then
   . $BASH_ALIAS_EPICS &&
-    configureEPICSmodule &&
+    configureEPICSmodule $EPICS_MODULE &&
     compileEPICSmodule $EPICS_MODULE || {
     echo >&2 failed $EPICS_MODULE
     exit 1
@@ -504,7 +510,8 @@ for EPICS_MODULE in asyn ads calc motor EthercatMC ; do
 done
 
 # compile modules
-for EPICS_MODULE in asyn ads calc motor EthercatMC ; do
+
+for EPICS_MODULE in epics/modules ; do
   compileEPICSmodule $EPICS_MODULE || {
     echo >&2 failed $EPICS_MODULE
     exit 1
