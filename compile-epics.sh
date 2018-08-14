@@ -273,6 +273,9 @@ configureEPICSmodule()
 {
   EPICS_MODULE=$1
   (
+    if ! test -d $EPICS_ROOT/modules/$EPICS_MODULE; then
+      return 0
+    fi
     mkdir -p  $EPICS_ROOT/modules/$EPICS_MODULE/configure &&
     cd $EPICS_ROOT/modules/$EPICS_MODULE/configure &&
       git clean -f &&
@@ -511,13 +514,15 @@ done
 
 # compile modules
 
-for EPICS_MODULE in epics/modules ; do
-  compileEPICSmodule $EPICS_MODULE || {
-    echo >&2 failed $EPICS_MODULE
-    exit 1
-  }
-done
-
+(
+  cd epics/modules &&
+    for EPICS_MODULE in asyn calc motor * ; do
+      compileEPICSmodule $EPICS_MODULE || {
+        echo >&2 failed $EPICS_MODULE
+        exit 1
+      }
+    done
+)
 
 echo install $EPICS_ROOT OK
 
