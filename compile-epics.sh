@@ -228,6 +228,45 @@ EOF
 }
 
 #############
+create_BASE_SUPPORT_RELEASE_HOST_ARCH_local()
+{
+  file=$1 &&
+  echo PWD=$PWD file=$file &&
+  cat >$file <<EOF
+EPICS_BASE  = $EPICS_ROOT/base
+SUPPORT     = \$(EPICS_BASE)/../modules
+ASYN        = \$(EPICS_BASE)/../modules/asyn
+MOTOR       = \$(EPICS_BASE)/../modules/motor
+SUPPORT     = \$(EPICS_BASE)/../modules
+EOF
+  if test -z "$BUSY_VER_X_Y"; then
+    echo BUSY=                         >>$file
+  fi &&
+  if test -z "$IPAC_VER_X_Y"; then
+    echo IPAC=                         >>$file
+  fi &&
+  if test -z "$SEQ_VER_X_Y"; then
+    echo SEQ=                          >>$file
+  fi &&
+  if test -z "$SNCSEQ_VER_X_Y"; then
+    echo SNCSEQ=                       >>$file
+  fi
+  if test -z "$SSCAN_VER_X_Y"; then
+    echo SSCAN=                        >>$file
+  fi
+if test -d "$EPICS_BASE/../modules/calc"; then
+  cat >>$file <<EOF
+CALC        = \$(EPICS_BASE)/../modules/calc
+EOF
+fi
+if test -d "$EPICS_BASE/../modules/ads"; then
+  cat >>$file <<EOF
+ADS         = \$(EPICS_BASE)/../modules/ads
+EOF
+fi
+}
+
+#############
 disable_MOTOR_DRIVERS()
 {
   file=$1 &&
@@ -281,16 +320,14 @@ configureEPICSmodule()
       git clean -f &&
       case $EPICS_MODULE in
       *asyn*|*calc*)
-        create_BASE_ASYN_MOTOR_RELEASE_LIBS_local RELEASE
+        echo 'include $(TOP)/configure/RELEASE_PATHS.local.$(EPICS_HOST_ARCH)' >RELEASE &&
+        create_BASE_SUPPORT_RELEASE_HOST_ARCH_local RELEASE_PATHS.local.$EPICS_HOST_ARCH
         ;;
-      *motor*|*ads*)
-        create_BASE_SUPPORT_RELEASE_PATH_local   RELEASE_PATHS.local &&
-        create_MOTOR_DRIVERS_RELEASE_LIBS_local  RELEASE_LIBS.local &&
-        disable_MOTOR_DRIVERS                    RELEASE_LIBS.local
-        ;;
-      *EthercatMC*)
-        create_BASE_SUPPORT_RELEASE_PATH_local   RELEASE_PATHS.local &&
-        create_MOTOR_DRIVERS_RELEASE_LIBS_local  RELEASE_LIBS.local
+      *motor*|*ads*|*EthercatMC*)
+        echo "#empty" >RELEASE_PATHS.local &&
+        echo "#empty" >RELEASE_LIBS.local &&
+        create_BASE_SUPPORT_RELEASE_HOST_ARCH_local RELEASE_PATHS.local.$EPICS_HOST_ARCH &&
+				disable_MOTOR_DRIVERS                       RELEASE_PATHS.local.$EPICS_HOST_ARCH
         ;;
       *)
         echo >&2 configureEPICSmodule: unsupported module $EPICS_MODULE
