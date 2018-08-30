@@ -19,3 +19,6 @@
 [submodule "epics/modules/EthercatMC"]
 	path = epics/modules/EthercatMC
 	url = https://bitbucket.org/europeanspallationsource/m-epics-EthercatMC.git
+[submodule "epics/modules/ads"]
+	path = epics/modules/ads
+	url = git@bitbucket.org:europeanspallationsource/m-epics-twincat-ads.git
