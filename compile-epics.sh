@@ -231,21 +231,15 @@ configureEPICSmodule()
     mkdir -p  $EPICS_ROOT/modules/$EPICS_MODULE/configure &&
     cd $EPICS_ROOT/modules/$EPICS_MODULE/configure &&
       git clean -f &&
-      case $EPICS_MODULE in
-      *asyn*|*calc*)
+			if grep "^SUPPORT=" RELEASE; then
         echo 'include $(TOP)/configure/RELEASE_PATHS.local.$(EPICS_HOST_ARCH)' >RELEASE &&
         create_BASE_SUPPORT_RELEASE_HOST_ARCH_local RELEASE_PATHS.local.$EPICS_HOST_ARCH
-        ;;
-      *motor*|*ads*|*EthercatMC*)
+      else
         echo "#empty" >RELEASE_PATHS.local &&
         echo "#empty" >RELEASE_LIBS.local &&
         create_BASE_SUPPORT_RELEASE_HOST_ARCH_local RELEASE_PATHS.local.$EPICS_HOST_ARCH &&
 				disable_MOTOR_DRIVERS                       RELEASE_PATHS.local.$EPICS_HOST_ARCH
-        ;;
-      *)
-        echo >&2 configureEPICSmodule: unsupported module $EPICS_MODULE
-        exit 1
-      esac
+      fi
   )
 }
 
