@@ -460,11 +460,13 @@ done
 
 (
   cd epics/modules &&
-    for EPICS_MODULE in asyn calc motor * ; do
-      compileEPICSmodule $EPICS_MODULE || {
-        echo >&2 failed $EPICS_MODULE
-        exit 1
-      }
+    for EPICS_MODULE in asyn ads calc motor * ; do
+      if test -d $EPICS_MODULE; then
+        compileEPICSmodule $EPICS_MODULE || {
+          echo >&2 failed $EPICS_MODULE
+          exit 1
+        }
+      fi
     done
 )
 
