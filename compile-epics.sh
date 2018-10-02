@@ -116,7 +116,7 @@ index f054802..d59a420 100644
 -OPT_CFLAGS_NO = -g
 +OPT_CFLAGS_YES = -O0 -g
 +OPT_CFLAGS_NO = -g -O0
- 
+
  PROF_CXXFLAGS_YES = -p
  GPROF_CXXFLAGS_YES = -pg
  CODE_CXXFLAGS = $(PROF_CXXFLAGS_$(PROFILE)) $(GPROF_CXXFLAGS_$(GPROF))
@@ -126,9 +126,9 @@ index f054802..d59a420 100644
 -OPT_CXXFLAGS_NO = -g
 +OPT_CXXFLAGS_YES = -O0 -g
 +OPT_CXXFLAGS_NO = -g -O0
- 
+
  CODE_LDFLAGS = $(PROF_CXXFLAGS_$(PROFILE)) $(GPROF_CXXFLAGS_$(GPROF))
- 
+
 EOF
       ;;
       *)
@@ -231,14 +231,14 @@ configureEPICSmodule()
     mkdir -p  $EPICS_ROOT/modules/$EPICS_MODULE/configure &&
     cd $EPICS_ROOT/modules/$EPICS_MODULE/configure &&
       git clean -f &&
-			if grep "^SUPPORT=" RELEASE; then
+      if grep "^SUPPORT=" RELEASE; then
         echo 'include $(TOP)/configure/RELEASE_PATHS.local.$(EPICS_HOST_ARCH)' >RELEASE &&
         create_BASE_SUPPORT_RELEASE_HOST_ARCH_local RELEASE_PATHS.local.$EPICS_HOST_ARCH
       else
         echo "#empty" >RELEASE_PATHS.local &&
         echo "#empty" >RELEASE_LIBS.local &&
         create_BASE_SUPPORT_RELEASE_HOST_ARCH_local RELEASE_PATHS.local.$EPICS_HOST_ARCH &&
-				disable_MOTOR_DRIVERS                       RELEASE_PATHS.local.$EPICS_HOST_ARCH
+        disable_MOTOR_DRIVERS                       RELEASE_PATHS.local.$EPICS_HOST_ARCH
       fi
   )
 }
@@ -379,7 +379,7 @@ EPICS_BASES_PATH=
 EPICS_ENV_PATH=
 EPICS_HOST_ARCH=
 EPICS_MODULES_PATH=
-export EPICS_BASE EPICS_BASES_PATH EPICS_ENV_PATH EPICS_HOST_ARCH EPICS_MODULES_PATH 
+export EPICS_BASE EPICS_BASES_PATH EPICS_ENV_PATH EPICS_HOST_ARCH EPICS_MODULES_PATH
 export EPICS_DEBUG=$EPICS_DEBUG
 export EPICS_DOWNLOAD=$EPICS_DOWNLOAD
 export EPICS_ROOT=$EPICS_ROOT
@@ -422,7 +422,7 @@ $CP $BASH_ALIAS_EPICS ../.. &&
   # Mac OS: /usr/include/readline/readline.h
   # Linux: /usr/include/readline.h
   if ! test -r /usr/include/readline/readline.h; then
-    test -r /mingw64/include/editline/readline.h ||   
+    test -r /mingw64/include/editline/readline.h ||
     test -r /usr/include/readline.h ||
     $APTGET readline-devel ||
     $APTGET libreadline-dev ||
