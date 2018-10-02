@@ -351,7 +351,7 @@ if $(echo "$EPICS_ROOT" | grep -q /usr/local); then
   fi
 fi
 
-CP="$FSUDO cp"
+CP="echo PWD=$PWD && $FSUDO cp -v"
 LN="$FSUDO ln"
 MKDIR="$FSUDO mkdir"
 MV="$FSUDO mv"
