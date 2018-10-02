@@ -450,6 +450,9 @@ run_make_in_dir ${EPICS_BASE} || {
 #################################
 # configure modules
 for EPICS_MODULE in asyn ads calc motor EthercatMC ; do
+  if ! test -d $EPICS_ROOT/modules/$EPICS_MODULE; then
+    continue
+  fi
   configureEPICSmodule $EPICS_MODULE || {
     echo >&2 failed $EPICS_MODULE
     exit 1
