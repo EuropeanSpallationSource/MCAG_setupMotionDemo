@@ -220,7 +220,16 @@ EOF
 
 
 
-#############
+############
+checkoutEPICSmodule()
+{
+  EPICS_MODULE=$1
+  if ! test -d $EPICS_ROOT/modules/$EPICS_MODULE; then
+    git submodule init epics/modules/$EPICS_MODULE &&
+    git submodule update epics/modules/$EPICS_MODULE
+  fi
+}
+
 configureEPICSmodule()
 {
   EPICS_MODULE=$1
@@ -362,6 +371,7 @@ export CP FSUDO LN MKDIR MV RM SUDO
 
 if test -n "$EPICS_MODULE"; then
   . $BASH_ALIAS_EPICS &&
+    checkoutEPICSmodule $EPICS_MODULE &&
     configureEPICSmodule $EPICS_MODULE &&
     compileEPICSmodule $EPICS_MODULE || {
     echo >&2 failed $EPICS_MODULE
