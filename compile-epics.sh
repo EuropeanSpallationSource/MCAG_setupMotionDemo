@@ -240,7 +240,7 @@ configureEPICSmodule()
     mkdir -p  $EPICS_ROOT/modules/$EPICS_MODULE/configure &&
     cd $EPICS_ROOT/modules/$EPICS_MODULE/configure &&
       git clean -f &&
-      if grep "^SUPPORT=" RELEASE; then
+      if egrep "^SUPPORT=|^EPICS_BASE=/" RELEASE; then
         echo 'include $(TOP)/configure/RELEASE_PATHS.local.$(EPICS_HOST_ARCH)' >RELEASE &&
         create_BASE_SUPPORT_RELEASE_HOST_ARCH_local RELEASE_PATHS.local.$EPICS_HOST_ARCH
       else
