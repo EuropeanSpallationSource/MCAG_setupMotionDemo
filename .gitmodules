@@ -22,3 +22,6 @@
 [submodule "epics/modules/ads"]
 	path = epics/modules/ads
 	url = git@bitbucket.org:europeanspallationsource/m-epics-twincat-ads.git
+[submodule "epics/modules/StreamDevice"]
+	path = epics/modules/StreamDevice
+	url = https://github.com/paulscherrerinstitute/StreamDevice.git
