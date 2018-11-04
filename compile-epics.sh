@@ -269,8 +269,8 @@ compileEPICSmodule()
 
 ##
 if ! test -d $EPICS_BASE/startup; then
-  git submodule init &&
-  git submodule update || {
+  git submodule init epics/base &&
+  git submodule update epics/base || {
     echo >&2 error with submodule
     exit 1
   }
@@ -370,14 +370,20 @@ export CP FSUDO LN MKDIR MV RM SUDO
 
 
 if test -n "$EPICS_MODULE"; then
-  . $BASH_ALIAS_EPICS &&
-    checkoutEPICSmodule $EPICS_MODULE &&
-    configureEPICSmodule $EPICS_MODULE &&
-    compileEPICSmodule $EPICS_MODULE || {
-    echo >&2 failed $EPICS_MODULE
-    exit 1
-  }
-  exit
+    if test $EPICS_MODULE = base; then
+       if ! test -d $EPICS_ROOT/$EPICS_MODULE; then
+           git submodule init epics/$EPICS_MODULE &&
+           git submodule update epics/$EPICS_MODULE
+       fi
+    else
+      . $BASH_ALIAS_EPICS &&
+      checkoutEPICSmodule $EPICS_MODULE &&
+      configureEPICSmodule $EPICS_MODULE &&
+      compileEPICSmodule $EPICS_MODULE || {
+        echo >&2 failed $EPICS_MODULE
+        exit 1
+      }
+    fi
 fi
 
 
@@ -458,39 +464,41 @@ run_make_in_dir ${EPICS_BASE} || {
 }
 
 #################################
-for EPICS_MODULE in asyn calc motor EthercatMC; do
-  if ! test -d $EPICS_MODULE; then
-    checkoutEPICSmodule $EPICS_MODULE || {
+# In case we don't have a specic module specified,
+# build a list of well known modules needed for
+# Motion Control
+if test -z "$EPICS_MODULE"; then
+  for EPICS_MODULE in asyn calc motor EthercatMC; do
+    if ! test -d $EPICS_MODULE; then
+      checkoutEPICSmodule $EPICS_MODULE || {
+        echo >&2 failed $EPICS_MODULE
+        exit 1
+      }
+    fi
+  done
+  # configure modules
+  for EPICS_MODULE in asyn ads calc motor EthercatMC ; do
+    if ! test -d $EPICS_ROOT/modules/$EPICS_MODULE; then
+      continue
+    fi
+    configureEPICSmodule $EPICS_MODULE || {
       echo >&2 failed $EPICS_MODULE
       exit 1
     }
-  fi
-done
-
-# configure modules
-for EPICS_MODULE in asyn ads calc motor EthercatMC ; do
-  if ! test -d $EPICS_ROOT/modules/$EPICS_MODULE; then
-    continue
-  fi
-  configureEPICSmodule $EPICS_MODULE || {
-    echo >&2 failed $EPICS_MODULE
-    exit 1
-  }
-done
-
-# compile modules
-
-(
-  cd epics/modules &&
-    for EPICS_MODULE in asyn ads calc motor * ; do
-      if test -d $EPICS_MODULE; then
-        compileEPICSmodule $EPICS_MODULE || {
-          echo >&2 failed $EPICS_MODULE
-          exit 1
-        }
-      fi
-    done
-)
+  done
+  # compile modules
+  (
+    cd epics/modules &&
+      for EPICS_MODULE in asyn ads calc motor * ; do
+        if test -d $EPICS_MODULE; then
+          compileEPICSmodule $EPICS_MODULE || {
+            echo >&2 failed $EPICS_MODULE
+            exit 1
+          }
+        fi
+      done
+  )
+fi
 
 echo install $EPICS_ROOT OK
 
