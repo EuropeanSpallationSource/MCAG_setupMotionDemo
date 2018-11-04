@@ -371,13 +371,19 @@ export CP FSUDO LN MKDIR MV RM SUDO
 
 if test -n "$EPICS_MODULE"; then
   . $BASH_ALIAS_EPICS &&
-    checkoutEPICSmodule $EPICS_MODULE &&
-    configureEPICSmodule $EPICS_MODULE &&
-    compileEPICSmodule $EPICS_MODULE || {
-    echo >&2 failed $EPICS_MODULE
-    exit 1
-  }
-  exit
+    if test $EPICS_MODULE = base; then
+       if ! test -d $EPICS_ROOT/$EPICS_MODULE; then
+           git submodule init epics/$EPICS_MODULE &&
+           git submodule update epics/$EPICS_MODULE
+       fi
+    else
+      checkoutEPICSmodule $EPICS_MODULE &&
+      configureEPICSmodule $EPICS_MODULE &&
+      compileEPICSmodule $EPICS_MODULE || {
+        echo >&2 failed $EPICS_MODULE
+        exit 1
+      }
+    fi
 fi
 
 

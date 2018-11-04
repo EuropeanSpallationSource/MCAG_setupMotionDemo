@@ -8,6 +8,10 @@ asyn:
 	./checkws.sh
 	/bin/sh -e -x ./compile-epics.sh -m asyn
 
+base:
+	./checkws.sh
+	/bin/sh -e -x ./compile-epics.sh -m base
+
 calc:
 	./checkws.sh
 	/bin/sh -e -x ./compile-epics.sh -m calc
