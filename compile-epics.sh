@@ -373,7 +373,11 @@ if test -n "$EPICS_MODULE"; then
     if test $EPICS_MODULE = base; then
        if ! test -d $EPICS_ROOT/$EPICS_MODULE; then
            git submodule init epics/$EPICS_MODULE &&
-           git submodule update epics/$EPICS_MODULE
+           git submodule update epics/$EPICS_MODULE &&
+           run_make_in_dir ${EPICS_BASE} || {
+             echo >&2 failed in ${EPICS_BASE}
+             exit 1
+           }
        fi
     else
       . $BASH_ALIAS_EPICS &&
@@ -457,11 +461,12 @@ $CP $BASH_ALIAS_EPICS ../.. &&
     exit 1
   }
 ) &&
-
-run_make_in_dir ${EPICS_BASE} || {
-  echo >&2 failed in ${EPICS_BASE}
-  exit 1
-}
+if test -z "$EPICS_MODULE"; then
+  run_make_in_dir ${EPICS_BASE} || {
+    echo >&2 failed in ${EPICS_BASE}
+    exit 1
+  }
+fi
 
 #################################
 # In case we don't have a specic module specified,
