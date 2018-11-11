@@ -20,5 +20,9 @@ motor:
 	./checkws.sh
 	/bin/sh -e -x ./compile-epics.sh -m motor
 
+Streamdevice:
+	./checkws.sh
+	/bin/sh -e -x ./compile-epics.sh -m StreamDevice
+
 clean:
 	./makeclean.sh
