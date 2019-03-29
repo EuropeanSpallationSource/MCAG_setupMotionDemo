@@ -4,6 +4,10 @@ all:
 	./checkws.sh
 	/bin/sh -e -x ./compile-epics.sh -i y
 
+ads:
+	./checkws.sh
+	/bin/sh -e -x ./compile-epics.sh -m ads
+
 asyn:
 	./checkws.sh
 	/bin/sh -e -x ./compile-epics.sh -m asyn
