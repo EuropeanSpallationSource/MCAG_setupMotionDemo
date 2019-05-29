@@ -234,10 +234,9 @@ configureEPICSmodule()
 {
   EPICS_MODULE=$1
   (
-    if ! test -d $EPICS_ROOT/modules/$EPICS_MODULE; then
+    if ! test -d $EPICS_ROOT/modules/$EPICS_MODULE/configure; then
       return 0
     fi
-    mkdir -p  $EPICS_ROOT/modules/$EPICS_MODULE/configure &&
     cd $EPICS_ROOT/modules/$EPICS_MODULE/configure &&
       git clean -f &&
       if egrep "^SUPPORT=|^EPICS_BASE=/" RELEASE; then
