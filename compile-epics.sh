@@ -224,7 +224,7 @@ EOF
 checkoutEPICSmodule()
 {
   EPICS_MODULE=$1
-  if ! test -d $EPICS_ROOT/modules/$EPICS_MODULE; then
+  if ! test -d $EPICS_ROOT/modules/$EPICS_MODULE/configure; then
     git submodule init epics/modules/$EPICS_MODULE &&
     git submodule update epics/modules/$EPICS_MODULE
   fi
