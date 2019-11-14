@@ -7,18 +7,15 @@
 [submodule "epics/modules/motor"]
 	path = epics/modules/motor
 	url = https://github.com/europeanspallationsource/motor.git
-[submodule "EthercatMC"]
-	path = EthercatMC
-	url = https://bitbucket.org/europeanspallationsource/m-epics-EthercatMC.git
 [submodule "epics/modules/calc"]
 	path = epics/modules/calc
 	url = https://github.com/epics-modules/calc.git
-[submodule "epics/modules/EthercatMC"]
-	path = epics/modules/EthercatMC
-	url = https://bitbucket.org/europeanspallationsource/m-epics-EthercatMC.git
 [submodule "epics/modules/ads"]
 	path = epics/modules/ads
 	url = git@bitbucket.org:europeanspallationsource/m-epics-twincat-ads.git
 [submodule "epics/modules/StreamDevice"]
 	path = epics/modules/StreamDevice
 	url = https://github.com/paulscherrerinstitute/StreamDevice.git
+[submodule "epics/modules/EthercatMC"]
+	path = epics/modules/EthercatMC
+	url = https://github.com/europeanspallationsource/m-epics-EthercatMC.git

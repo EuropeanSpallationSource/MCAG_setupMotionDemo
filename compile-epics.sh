@@ -269,12 +269,16 @@ compileEPICSmodule()
 ##
 if ! test -d $EPICS_BASE/startup; then
   git submodule init epics/base &&
-  git submodule update epics/base || {
+  git submodule update --recursive epics/base || {
     echo >&2 error with submodule
     exit 1
   }
+  (
+    cd epics/base &&
+      git submodule init &&
+      git submodule update
+  )
 fi
-
 
 # Set up EPICS_HOST_ARCH
 UNAME=$(uname)

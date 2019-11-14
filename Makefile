@@ -33,7 +33,13 @@ Streamdevice:
 	/bin/sh -e -x ./compile-epics.sh -m StreamDevice
 
 clean:
-	./makeclean.sh
+	./makeclean.sh clean
+
+distclean:
+	./makeclean.sh distclean
+
+gitclean:
+	./makeclean.sh gitclean
 
 help:
 	@echo make
