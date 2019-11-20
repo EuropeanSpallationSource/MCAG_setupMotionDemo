@@ -23,6 +23,17 @@ fi
 if test -x /opt/local/bin/port; then
   APTGET="$SUDO port install"
 fi
+# brew (Mac)
+if test -x /usr/local/bin/brew; then
+  APTGET="$SUDO brew install"
+fi
+
+
+if test "$APTGET" = /bin/false;
+then
+  echo >&1 "Cant find a package manager (like apt, yu, port)"
+  exit 1
+fi
 echo APTGET=$APTGET
 export APTGET
 
