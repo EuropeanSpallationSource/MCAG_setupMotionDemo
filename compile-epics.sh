@@ -455,18 +455,18 @@ $CP $BASH_ALIAS_EPICS ../.. &&
   #We need readline
   # Mac OS: /usr/include/readline/readline.h
   # Linux: /usr/include/readline.h
-  if ! test -r /usr/include/readline/readline.h; then
-    test -r /mingw64/include/editline/readline.h ||
-    test -r /usr/include/readline.h ||
-    $APTGET readline-devel ||
-    $APTGET libreadline-dev ||
-    $APTGET libreadline6-dev ||
+  #if ! test -r /usr/include/readline/readline.h; then
+  #  test -r /mingw64/include/editline/readline.h ||
+  #  test -r /usr/include/readline.h ||
+  #  $APTGET readline-devel ||
+  #  $APTGET libreadline-dev ||
+  #  $APTGET libreadline6-dev ||
 
-    {
-      echo >&2 can not install readline-devel
-      exit 1
-    }
-  fi &&
+  #  {
+  #    echo >&2 can not install readline-devel
+  #    exit 1
+  #  }
+  #fi &&
   if test "$EPICS_DEBUG" = y; then
     patch_CONFIG_gnuCommon $EPICS_ROOT/base/configure
   fi &&
