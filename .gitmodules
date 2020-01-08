@@ -16,6 +16,3 @@
 [submodule "epics/modules/StreamDevice"]
 	path = epics/modules/StreamDevice
 	url = https://github.com/paulscherrerinstitute/StreamDevice.git
-[submodule "epics/modules/EthercatMC"]
-	path = epics/modules/EthercatMC
-	url = https://github.com/europeanspallationsource/m-epics-EthercatMC.git
