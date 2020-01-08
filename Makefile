@@ -24,9 +24,9 @@ motor:
 	./checkws.sh
 	/bin/sh -e -x ./compile-epics.sh -m motor
 
-EthercatMC:
+ethercatmc:
 	./checkws.sh
-	/bin/sh -e -x ./compile-epics.sh -m EthercatMC
+	/bin/sh -e -x ./compile-epics.sh -m ethercatmc
 
 Streamdevice:
 	./checkws.sh

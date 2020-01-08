@@ -487,7 +487,7 @@ fi
 # build a list of well known modules needed for
 # Motion Control
 if test -z "$EPICS_MODULE"; then
-  for EPICS_MODULE in asyn calc motor EthercatMC; do
+  for EPICS_MODULE in asyn calc motor ethercatmc; do
     if ! test -d $EPICS_MODULE; then
       checkoutEPICSmodule $EPICS_MODULE || {
         echo >&2 failed $EPICS_MODULE
@@ -496,7 +496,7 @@ if test -z "$EPICS_MODULE"; then
     fi
   done
   # configure modules
-  for EPICS_MODULE in asyn ads calc motor EthercatMC ; do
+  for EPICS_MODULE in asyn ads calc motor ethercatmc; do
     if ! test -d $EPICS_ROOT/modules/$EPICS_MODULE; then
       continue
     fi
