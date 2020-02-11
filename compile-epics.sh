@@ -46,7 +46,7 @@ BASH_ALIAS_EPICS=./.epics.$(hostname).$uname_s.$uname_m
 EPICS_ROOT=$PWD/epics
 EPICS_BASE=$EPICS_ROOT/base
 
-EPICS_BASE_VER=3.15.5
+EPICS_BASE_VER=7.0.3
 
 
 export EPICS_BASE EPICS_BASES_PATH EPICS_ENV_PATH EPICS_HOST_ARCH EPICS_MODULES_PATH
@@ -142,6 +142,36 @@ index f054802..d59a420 100644
 
 EOF
       ;;
+      *7.0.3*)
+      cat <<\EOF > "$file.patch"
+diff --git a/configure/CONFIG.gnuCommon b/configure/CONFIG.gnuCommon
+index c4fd8cedd..d3b322da4 100644
+--- a/configure/CONFIG.gnuCommon
++++ b/configure/CONFIG.gnuCommon
+@@ -34,8 +34,8 @@ CODE_CFLAGS = $(PROF_CFLAGS_$(PROFILE)) $(GPROF_CFLAGS_$(GPROF))
+ CODE_CFLAGS += $(ASAN_FLAGS_$(ENABLE_ASAN))
+ WARN_CFLAGS_YES = -Wall
+ WARN_CFLAGS_NO = -w
+-OPT_CFLAGS_YES = -O3
+-OPT_CFLAGS_NO = -g
++OPT_CFLAGS_YES = -O0 -g
++OPT_CFLAGS_NO = -g -O0
+ 
+ PROF_CXXFLAGS_YES = -p
+ GPROF_CXXFLAGS_YES = -pg
+@@ -43,8 +43,8 @@ CODE_CXXFLAGS = $(PROF_CXXFLAGS_$(PROFILE)) $(GPROF_CXXFLAGS_$(GPROF))
+ CODE_CXXFLAGS += $(ASAN_FLAGS_$(ENABLE_ASAN))
+ WARN_CXXFLAGS_YES = -Wall
+ WARN_CXXFLAGS_NO = -w
+-OPT_CXXFLAGS_YES = -O3
+-OPT_CXXFLAGS_NO = -g
++OPT_CXXFLAGS_YES = -O0 -g
++OPT_CXXFLAGS_NO = -g -O0
+ 
+ CODE_LDFLAGS = $(PROF_CXXFLAGS_$(PROFILE)) $(GPROF_CXXFLAGS_$(GPROF))
+ CODE_LDFLAGS += $(ASAN_LDFLAGS_$(ENABLE_ASAN))
+EOF
+;;
       *)
       echo >&2 "PWD=$PWD Can not patch $file, not supported"
       exit 1
@@ -149,7 +179,6 @@ EOF
     patch < "$file.patch"
   )
 }
-
 
 #############
 create_BASE_SUPPORT_RELEASE_HOST_ARCH_local()
