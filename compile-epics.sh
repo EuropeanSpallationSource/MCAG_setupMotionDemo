@@ -114,64 +114,11 @@ patch_CONFIG_gnuCommon()
     $CP $file.original $file &&
     case $EPICS_BASE_VER in
       *3.14.12.3*|*3.14.12.5*|*3.15.1*|*3.15.2*|*3.15.5*)
-      cat <<\EOF > "$file.patch"
-diff --git a/CONFIG.gnuCommon b/CONFIG.gnuCommon
-index f054802..d59a420 100644
---- a/CONFIG.gnuCommon
-+++ b/CONFIG.gnuCommon
-@@ -27,16 +27,16 @@ GPROF_CFLAGS_YES = -pg
- CODE_CFLAGS = $(PROF_CFLAGS_$(PROFILE)) $(GPROF_CFLAGS_$(GPROF))
- WARN_CFLAGS_YES = -Wall
- WARN_CFLAGS_NO = -w
--OPT_CFLAGS_YES = -O3
--OPT_CFLAGS_NO = -g
-+OPT_CFLAGS_YES = -O0 -g
-+OPT_CFLAGS_NO = -g -O0
-
- PROF_CXXFLAGS_YES = -p
- GPROF_CXXFLAGS_YES = -pg
- CODE_CXXFLAGS = $(PROF_CXXFLAGS_$(PROFILE)) $(GPROF_CXXFLAGS_$(GPROF))
- WARN_CXXFLAGS_YES = -Wall
- WARN_CXXFLAGS_NO = -w
--OPT_CXXFLAGS_YES = -O3
--OPT_CXXFLAGS_NO = -g
-+OPT_CXXFLAGS_YES = -O0 -g
-+OPT_CXXFLAGS_NO = -g -O0
-
- CODE_LDFLAGS = $(PROF_CXXFLAGS_$(PROFILE)) $(GPROF_CXXFLAGS_$(GPROF))
-
-EOF
+      cp 3.14-15.patch $file.patch
       ;;
       *7.0.3*)
-      cat <<\EOF > "$file.patch"
-diff --git a/configure/CONFIG.gnuCommon b/configure/CONFIG.gnuCommon
-index c4fd8cedd..d3b322da4 100644
---- a/configure/CONFIG.gnuCommon
-+++ b/configure/CONFIG.gnuCommon
-@@ -34,8 +34,8 @@ CODE_CFLAGS = $(PROF_CFLAGS_$(PROFILE)) $(GPROF_CFLAGS_$(GPROF))
- CODE_CFLAGS += $(ASAN_FLAGS_$(ENABLE_ASAN))
- WARN_CFLAGS_YES = -Wall
- WARN_CFLAGS_NO = -w
--OPT_CFLAGS_YES = -O3
--OPT_CFLAGS_NO = -g
-+OPT_CFLAGS_YES = -O0 -g
-+OPT_CFLAGS_NO = -g -O0
- 
- PROF_CXXFLAGS_YES = -p
- GPROF_CXXFLAGS_YES = -pg
-@@ -43,8 +43,8 @@ CODE_CXXFLAGS = $(PROF_CXXFLAGS_$(PROFILE)) $(GPROF_CXXFLAGS_$(GPROF))
- CODE_CXXFLAGS += $(ASAN_FLAGS_$(ENABLE_ASAN))
- WARN_CXXFLAGS_YES = -Wall
- WARN_CXXFLAGS_NO = -w
--OPT_CXXFLAGS_YES = -O3
--OPT_CXXFLAGS_NO = -g
-+OPT_CXXFLAGS_YES = -O0 -g
-+OPT_CXXFLAGS_NO = -g -O0
- 
- CODE_LDFLAGS = $(PROF_CXXFLAGS_$(PROFILE)) $(GPROF_CXXFLAGS_$(GPROF))
- CODE_LDFLAGS += $(ASAN_LDFLAGS_$(ENABLE_ASAN))
-EOF
-;;
+      cp 7.0.3.patch $file.patch
+      ;;
       *)
       echo >&2 "PWD=$PWD Can not patch $file, not supported"
       exit 1
