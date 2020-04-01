@@ -100,6 +100,7 @@ run_make_in_dir()
 patch_CONFIG_gnuCommon()
 {
   (
+    OLDPWD=$PWD
     file=CONFIG.gnuCommon
     export file
     cd "$1" &&
@@ -114,10 +115,10 @@ patch_CONFIG_gnuCommon()
     $CP $file.original $file &&
     case $EPICS_BASE_VER in
       *3.14.12.3*|*3.14.12.5*|*3.15.1*|*3.15.2*|*3.15.5*)
-      cp 3.14-15.patch $file.patch
+      cp -v $OLDPWD/D3.14-15.patch $file.patch
       ;;
       *7.0.3*)
-      cp 7.0.3.patch $file.patch
+      cp -v $OLDPWD/7.0.3.patch $file.patch
       ;;
       *)
       echo >&2 "PWD=$PWD Can not patch $file, not supported"
