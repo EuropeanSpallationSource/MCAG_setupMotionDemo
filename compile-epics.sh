@@ -132,13 +132,11 @@ patch_CONFIG_gnuCommon()
 create_BASE_SUPPORT_RELEASE_HOST_ARCH_local()
 {
   file=$1 &&
+  EPICS_MODULE=$2
   echo PWD=$PWD file=$file &&
   cat >$file <<EOF
 EPICS_BASE  = $EPICS_ROOT/base
-SUPPORT     = \$(EPICS_BASE)/../modules
 ASYN        = \$(EPICS_BASE)/../modules/asyn
-MOTOR       = \$(EPICS_BASE)/../modules/motor
-SUPPORT     = \$(EPICS_BASE)/../modules
 EOF
   if test -z "$BUSY_VER_X_Y"; then
     echo BUSY=                         >>$file
@@ -165,6 +163,16 @@ if test -d "$EPICS_BASE/../modules/ads"; then
 ADS         = \$(EPICS_BASE)/../modules/ads
 EOF
 fi
+
+case "$EPICS_MODULE" in
+  ethercatmc)
+    cat >>$file <<EOF
+  MOTOR       = \$(EPICS_BASE)/../modules/motor
+EOF
+  ;;
+  *)
+  ;;
+esac
 }
 
 #############
@@ -229,7 +237,7 @@ configureEPICSmodule()
       git clean -f &&
       if egrep "^SUPPORT=|^EPICS_BASE=/" RELEASE; then
         echo 'include $(TOP)/configure/RELEASE_PATHS.local.$(EPICS_HOST_ARCH)' >RELEASE &&
-        create_BASE_SUPPORT_RELEASE_HOST_ARCH_local RELEASE_PATHS.local.$EPICS_HOST_ARCH
+        create_BASE_SUPPORT_RELEASE_HOST_ARCH_local RELEASE_PATHS.local.$EPICS_HOST_ARCH $EPICS_MODULE
       else
         echo "#empty" >RELEASE_PATHS.local &&
         echo "#empty" >RELEASE_LIBS.local &&
