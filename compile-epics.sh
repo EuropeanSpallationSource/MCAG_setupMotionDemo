@@ -241,7 +241,7 @@ configureEPICSmodule()
       else
         echo "#empty" >RELEASE_PATHS.local &&
         echo "#empty" >RELEASE_LIBS.local &&
-        create_BASE_SUPPORT_RELEASE_HOST_ARCH_local RELEASE_PATHS.local.$EPICS_HOST_ARCH &&
+        create_BASE_SUPPORT_RELEASE_HOST_ARCH_local RELEASE_PATHS.local.$EPICS_HOST_ARCH $EPICS_MODULE &&
         disable_MOTOR_DRIVERS                       RELEASE_PATHS.local.$EPICS_HOST_ARCH
       fi
   )
