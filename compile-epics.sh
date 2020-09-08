@@ -493,7 +493,7 @@ if test -z "$EPICS_MODULE"; then
   # compile modules
   (
     cd epics/modules &&
-      for EPICS_MODULE in asyn ads calc motor * ; do
+      for EPICS_MODULE in calc asyn ads motor * ; do
         if test -d $EPICS_MODULE; then
           compileEPICSmodule $EPICS_MODULE || {
             echo >&2 failed $EPICS_MODULE
