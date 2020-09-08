@@ -454,11 +454,7 @@ $CP $BASH_ALIAS_EPICS ../.. &&
   #fi &&
   if test "$EPICS_DEBUG" = y; then
     patch_CONFIG_gnuCommon $EPICS_ROOT/base/configure
-  fi &&
-  run_make_in_dir $EPICS_ROOT/base || {
-    echo >&2 failed in $PWD
-    exit 1
-  }
+  fi
 ) &&
 if test -z "$EPICS_MODULE"; then
   run_make_in_dir ${EPICS_BASE} || {
