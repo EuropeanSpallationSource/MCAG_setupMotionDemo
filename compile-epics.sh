@@ -283,6 +283,18 @@ case $UNAME in
 MINGW64_NT-6.1)
   EPICS_HOST_ARCH=windows-x64-mingw
   ;;
+Linux)
+  case $(uname -m) in
+       ppc)
+         EPICS_HOST_ARCH=linux-ppc
+         ;;
+       *)
+         EPICS_HOST_ARCH=$($EPICS_BASE/startup/EpicsHostArch) || {
+           echo >&2 EPICS_HOST_ARCH failed
+           exit 1
+         }
+  esac
+  ;;
 *)
   EPICS_HOST_ARCH=$($EPICS_BASE/startup/EpicsHostArch) || {
     echo >&2 EPICS_HOST_ARCH failed
