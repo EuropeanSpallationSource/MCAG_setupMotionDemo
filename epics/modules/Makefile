@@ -1,14 +1,14 @@
 all:
-	./makeclean.sh
+	./makewrapper.sh
 
 clean:
-	./makeclean.sh clean
+	./makewrapper.sh clean
 
 distclean:
-	./makeclean.sh distclean
+	./makewrapper.sh distclean
 
 gitclean:
-	./makeclean.sh gitclean
+	./makewrapper.sh gitclean
 
 help:
 	@echo make
@@ -18,4 +18,4 @@ help:
 	@echo make install
 
 install:
-	./makeclean.sh install
+	./makewrapper.sh install
