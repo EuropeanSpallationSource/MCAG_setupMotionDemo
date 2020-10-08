@@ -1,21 +1,40 @@
-all:
-	./makewrapper.sh
+# default target, must come first
+all:    alldummy
 
-clean:
-	./makewrapper.sh clean
+asyn:   asyndummy
 
-distclean:
-	./makewrapper.sh distclean
+ethercatmc: ethercatmcdummy
+
+motor:   motordummy
+
+clean:  cleandummy
+
+distclean: distcleandummy
 
 gitclean:
 	./makewrapper.sh gitclean
 
 help:
 	@echo make
+	@echo make asyn
 	@echo make clean
 	@echo make distclean
 	@echo make gitclean
-	@echo make install
 
-install:
-	./makewrapper.sh install
+alldummy:
+	./makewrapper.sh all
+
+asyndummy:
+	./makewrapper.sh asyn
+
+distcleandummy:
+	./makewrapper.sh distclean
+
+cleandummy:
+	./makewrapper.sh clean
+
+ethercatmcdummy:
+	./makewrapper.sh ethercatmc
+
+motordummy:
+	./makewrapper.sh motor
