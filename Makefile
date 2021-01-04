@@ -47,7 +47,7 @@ help:
 	@echo make base
 	@echo make calc
 	@echo make motor
-	@echo make EthercatMC
+	@echo make ethercatmc
 	@echo make Streamdevice
 
 
