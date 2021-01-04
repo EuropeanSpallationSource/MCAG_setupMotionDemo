@@ -169,6 +169,11 @@ case "$EPICS_MODULE" in
     cat >>$file <<EOF
   MOTOR       = \$(EPICS_BASE)/../modules/motor
 EOF
+if test -d "$EPICS_BASE/../modules/StreamDevice"; then
+  cat >>$file <<EOF
+STREAM       = \$(EPICS_BASE)/../modules/StreamDevice
+EOF
+  fi
   ;;
   *)
   ;;
