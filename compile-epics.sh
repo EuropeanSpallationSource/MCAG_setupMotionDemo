@@ -27,6 +27,9 @@ fi
 if test -x /usr/local/bin/brew; then
   APTGET="$SUDO brew install"
 fi
+if test -x /usr/sbin/pkg; then
+  APTGET="$SUDO pkg install -U"
+fi
 
 
 if test "$APTGET" = /bin/false;
@@ -300,6 +303,16 @@ Linux)
          }
   esac
   ;;
+FreeBSD)
+  case $(uname -m) in
+  amd64)
+    EPICS_HOST_ARCH=freebsd-x86_64
+    ;;
+       *)
+    echo >&2 EPICS_HOST_ARCH failed for FreeBSD
+    exit 1
+  esac
+  ;;
 *)
   EPICS_HOST_ARCH=$($EPICS_BASE/startup/EpicsHostArch) || {
     echo >&2 EPICS_HOST_ARCH failed
@@ -445,9 +458,10 @@ $CP $BASH_ALIAS_EPICS ../.. &&
 (
   addpacketifneeded make &&
   # We need gcc and g++: gcc-g++ under Scientifc Linux
+  # or gcc
   if ! type g++ >/dev/null 2>/dev/null; then
     echo $APTGET gcc-c++
-    $APTGET gcc-c++
+    $APTGET gcc-c++ || $APTGET gcc
   fi
   # We need g++
   if ! type g++ >/dev/null 2>/dev/null; then
