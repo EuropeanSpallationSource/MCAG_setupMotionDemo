@@ -178,6 +178,13 @@ STREAM       = \$(EPICS_BASE)/../modules/StreamDevice
 EOF
   fi
   ;;
+  cacm)
+  if test -d "$EPICS_BASE/../modules/pcas"; then
+  cat >>$file <<EOF
+PCAS         = \$(EPICS_BASE)/../modules/pcas
+EOF
+fi
+;;
   *)
   ;;
 esac
