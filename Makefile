@@ -20,13 +20,21 @@ calc:
 	./checkws.sh
 	/bin/sh -e -x ./compile-epics.sh -m calc
 
-motor:
+cacm:
 	./checkws.sh
-	/bin/sh -e -x ./compile-epics.sh -m motor
+	/bin/sh -e -x ./compile-epics.sh -m cacm
 
 ethercatmc:
 	./checkws.sh
 	/bin/sh -e -x ./compile-epics.sh -m ethercatmc
+
+motor:
+	./checkws.sh
+	/bin/sh -e -x ./compile-epics.sh -m motor
+
+pcas:
+	./checkws.sh
+	/bin/sh -e -x ./compile-epics.sh -m pcas
 
 Streamdevice:
 	./checkws.sh
@@ -46,8 +54,10 @@ help:
 	@echo make asyn
 	@echo make base
 	@echo make calc
+	@echo make cacm
 	@echo make motor
 	@echo make ethercatmc
+	@echo make pcas
 	@echo make Streamdevice
 
 

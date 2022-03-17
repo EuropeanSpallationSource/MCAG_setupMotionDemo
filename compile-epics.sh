@@ -243,7 +243,7 @@ configureEPICSmodule()
     fi
     cd $EPICS_ROOT/modules/$EPICS_MODULE/configure &&
       git clean -f &&
-      if egrep "^SUPPORT=|^EPICS_BASE=/" RELEASE; then
+      if egrep "^SUPPORT=|^EPICS_BASE *= */" RELEASE; then
         echo 'include $(TOP)/configure/RELEASE_PATHS.local.$(EPICS_HOST_ARCH)' >RELEASE &&
         create_BASE_SUPPORT_RELEASE_HOST_ARCH_local RELEASE_PATHS.local.$EPICS_HOST_ARCH $EPICS_MODULE
       else
@@ -508,7 +508,7 @@ if test -z "$EPICS_MODULE"; then
     fi
   done
   # configure modules
-  for EPICS_MODULE in asyn ads calc motor ethercatmc; do
+  for EPICS_MODULE in asyn ads calc pcas cacm motor ethercatmc; do
     if ! test -d $EPICS_ROOT/modules/$EPICS_MODULE; then
       continue
     fi
