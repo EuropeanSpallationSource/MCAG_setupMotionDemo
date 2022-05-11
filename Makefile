@@ -36,6 +36,11 @@ pcas:
 	./checkws.sh
 	/bin/sh -e -x ./compile-epics.sh -m pcas
 
+pvxs:
+	./checkws.sh
+	/bin/sh -e -x ./compile-epics.sh -m pvxs
+
+
 Streamdevice:
 	./checkws.sh
 	/bin/sh -e -x ./compile-epics.sh -m StreamDevice
@@ -58,6 +63,7 @@ help:
 	@echo make motor
 	@echo make ethercatmc
 	@echo make pcas
+	@echo make pvxs
 	@echo make Streamdevice
 
 

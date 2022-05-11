@@ -90,6 +90,9 @@ install_re2c()
 run_make_in_dir()
 {
   dir=$1 &&
+  if echo $dir | grep -i "\.not"; then
+    return
+  fi
   echo cd $dir &&
   (
     cd $dir &&
@@ -170,11 +173,16 @@ fi
 case "$EPICS_MODULE" in
   ethercatmc)
     cat >>$file <<EOF
-  MOTOR       = \$(EPICS_BASE)/../modules/motor
+MOTOR       = \$(EPICS_BASE)/../modules/motor
 EOF
 if test -d "$EPICS_BASE/../modules/StreamDevice"; then
   cat >>$file <<EOF
 STREAM       = \$(EPICS_BASE)/../modules/StreamDevice
+EOF
+  fi
+  if test -d "$EPICS_BASE/../modules/pvxs"; then
+  cat >>$file <<EOF
+PVXS         = \$(EPICS_BASE)/../modules/pvxs
 EOF
   fi
   ;;
@@ -235,6 +243,9 @@ EOF
 checkoutEPICSmodule()
 {
   EPICS_MODULE=$1
+  if echo $EPICS_MODULE | grep -i "\.not"; then
+    return
+  fi
   if ! test -d $EPICS_ROOT/modules/$EPICS_MODULE/configure; then
     git submodule init epics/modules/$EPICS_MODULE &&
     git submodule update epics/modules/$EPICS_MODULE
@@ -250,10 +261,16 @@ configureEPICSmodule()
     fi
     cd $EPICS_ROOT/modules/$EPICS_MODULE/configure &&
       git clean -f &&
-      if egrep "^SUPPORT=|^EPICS_BASE *= */" RELEASE; then
+      if grep '^-include \$(TOP)/../RELEASE.\$(EPICS_HOST_ARCH).local' RELEASE; then
+        echo "$EPICS_MODULE: RELEASE style RELEASE.EPICS_HOST_ARCH.local"
+        echo 'include $(TOP)/configure/RELEASE_PATHS.local.$(EPICS_HOST_ARCH)' >RELEASE.local &&
+        create_BASE_SUPPORT_RELEASE_HOST_ARCH_local RELEASE_PATHS.local.$EPICS_HOST_ARCH $EPICS_MODULE
+      elif egrep "^SUPPORT=|^EPICS_BASE *= */" RELEASE; then
+        echo "$EPICS_MODULE: RELEASE style RELEASE-allows-no-local"
         echo 'include $(TOP)/configure/RELEASE_PATHS.local.$(EPICS_HOST_ARCH)' >RELEASE &&
         create_BASE_SUPPORT_RELEASE_HOST_ARCH_local RELEASE_PATHS.local.$EPICS_HOST_ARCH $EPICS_MODULE
       else
+        echo "$EPICS_MODULE: RELEASE style RELEASE_PATHS.local.EPICS_HOST_ARCH"
         echo "#empty" >RELEASE_PATHS.local &&
         echo "#empty" >RELEASE_LIBS.local &&
         create_BASE_SUPPORT_RELEASE_HOST_ARCH_local RELEASE_PATHS.local.$EPICS_HOST_ARCH $EPICS_MODULE &&
@@ -506,7 +523,7 @@ fi
 # build a list of well known modules needed for
 # Motion Control
 if test -z "$EPICS_MODULE"; then
-  for EPICS_MODULE in asyn calc motor ethercatmc; do
+  for EPICS_MODULE in asyn calc motor pvxs ethercatmc; do
     if ! test -d $EPICS_MODULE; then
       checkoutEPICSmodule $EPICS_MODULE || {
         echo >&2 failed $EPICS_MODULE
@@ -515,7 +532,7 @@ if test -z "$EPICS_MODULE"; then
     fi
   done
   # configure modules
-  for EPICS_MODULE in asyn ads calc pcas cacm motor ethercatmc; do
+  for EPICS_MODULE in asyn ads calc pcas cacm motor pvxs ethercatmc; do
     if ! test -d $EPICS_ROOT/modules/$EPICS_MODULE; then
       continue
     fi
