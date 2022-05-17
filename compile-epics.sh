@@ -185,6 +185,16 @@ EOF
 PVXS         = \$(EPICS_BASE)/../modules/pvxs
 EOF
   fi
+  if ! test -f "$EPICS_BASE/modules/pvAccess/Makefile"; then
+    echo "No Support for pvAccess"
+    EMCMFILE=$EPICS_BASE/../modules/ethercatmc/ethercatmcExApp/src/Makefile
+    if grep "ifdef  *BASE_7_0" $EMCMFILE; then
+      sed -e "s/ifdef  *BASE_7_0/ifdef XPVABASE_7_0/g" <"$EMCMFILE" >/tmp/$$ &&
+      mv -f /tmp/$$ "$EMCMFILE"
+    fi
+  else
+    echo "Support for pvAccess"
+  fi
   ;;
   cacm)
   if test -d "$EPICS_BASE/../modules/pcas"; then
