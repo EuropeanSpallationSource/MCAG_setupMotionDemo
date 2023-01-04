@@ -505,9 +505,11 @@ $CP $BASH_ALIAS_EPICS ../.. &&
   #We need readline
   # Mac OS: /usr/include/readline/readline.h
   # Linux: /usr/include/readline.h
-  if ! test -r /usr/include/readline/readline.h; then
-    test -r /mingw64/include/editline/readline.h ||
-    test -r /usr/include/readline.h ||
+  if ! test -r /usr/include/readline/readline.h &&
+    ! test -r /mingw64/include/editline/readline.h &&
+    ! test -r /usr/include/readline.h &&
+    ! test -r /opt/local/include/readline/readline.h
+  then
     $APTGET readline-devel ||
     $APTGET libreadline-dev ||
     $APTGET libreadline6-dev ||
