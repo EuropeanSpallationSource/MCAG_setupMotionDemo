@@ -513,6 +513,7 @@ $CP $BASH_ALIAS_EPICS ../.. &&
     $APTGET readline-devel ||
     $APTGET libreadline-dev ||
     $APTGET libreadline6-dev ||
+    $APTGET devel/readline ||
     {
       echo >&2 can not install readline-devel
       exit 1
