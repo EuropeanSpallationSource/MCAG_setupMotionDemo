@@ -31,10 +31,14 @@ if test -x /usr/sbin/pkg; then
   APTGET="$SUDO pkg install -U"
 fi
 
+if type pacman >/dev/null 2>/dev/null; then
+  APTGET="pacman -S"
+fi
+
 
 if test "$APTGET" = /bin/false;
 then
-  echo >&1 "Cant find a package manager (like apt, yu, port)"
+  echo >&1 "Cant find a package manager (like apt, yu, port, pacman)"
   exit 1
 fi
 echo APTGET=$APTGET
@@ -322,7 +326,7 @@ fi
 UNAME=$(uname)
 echo UNAME=$UNAME EPICS_HOST_ARCH=$EPICS_HOST_ARCH
 case $UNAME in
-MINGW64_NT-6.1)
+MINGW64_NT*)
   EPICS_HOST_ARCH=windows-x64-mingw
   ;;
 Linux)
@@ -514,6 +518,7 @@ $CP $BASH_ALIAS_EPICS ../.. &&
     $APTGET libreadline-dev ||
     $APTGET libreadline6-dev ||
     $APTGET devel/readline ||
+    $APTGET libreadline-devel ||
     {
       echo >&2 can not install readline-devel
       exit 1
