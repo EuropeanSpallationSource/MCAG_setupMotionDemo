@@ -7,7 +7,12 @@ EPICS_ENV_PATH=
 EPICS_HOST_ARCH=
 EPICS_MODULES_PATH=
 
-if uname -a | egrep "CYGWIN|MING" >/dev/null; then
+MAKE=make
+UNAME_A=$(uname -a)
+if echo $UNAME_A | grep "^FreeBSD .* BHF amd64$"; then
+  SUDO=doas
+  MAKE=gmake
+elif echo $UNAME_A | egrep "CYGWIN|MING" >/dev/null; then
   SUDO=
 else
   SUDO=sudo
@@ -86,9 +91,9 @@ install_re2c()
     addpacketifneeded automake &&
     ./autogen.sh &&
     ./configure &&
-    make &&
-    echo PWD=$PWD $FSUDO make install &&
-    $FSUDO make install
+    $MAKE &&
+    echo PWD=$PWD $FSUDO $MAKE install &&
+    $FSUDO $MAKE install
   )
 }
 run_make_in_dir()
@@ -100,8 +105,8 @@ run_make_in_dir()
   echo cd $dir &&
   (
     cd $dir &&
-    $FSUDO make -f Makefile || {
-    echo >&2 PWD=$PWD Can not make
+    $FSUDO $MAKE -f Makefile || {
+    echo >&2 PWD=$PWD Can not $MAKE
     exit 1
   }
   )
@@ -494,7 +499,7 @@ $CP $BASH_ALIAS_EPICS ../.. &&
 ################
 
 (
-  addpacketifneeded make &&
+  addpacketifneeded $MAKE &&
   # We need gcc and g++: gcc-g++ under Scientifc Linux
   # or gcc
   if ! type g++ >/dev/null 2>/dev/null; then
@@ -512,7 +517,8 @@ $CP $BASH_ALIAS_EPICS ../.. &&
   if ! test -r /usr/include/readline/readline.h &&
     ! test -r /mingw64/include/editline/readline.h &&
     ! test -r /usr/include/readline.h &&
-    ! test -r /opt/local/include/readline/readline.h
+    ! test -r /opt/local/include/readline/readline.h &&
+    ! test -r /usr/local/include/readline/readline.h
   then
     $APTGET readline-devel ||
     $APTGET libreadline-dev ||
