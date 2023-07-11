@@ -180,7 +180,7 @@ EOF
 fi
 
 case "$EPICS_MODULE" in
-  ethercatmc)
+  ethercatmc|motor*)
     cat >>$file <<EOF
 MOTOR       = \$(EPICS_BASE)/../modules/motor
 EOF
