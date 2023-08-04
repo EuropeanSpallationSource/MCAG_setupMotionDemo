@@ -15,6 +15,10 @@ if echo $UNAME_A | grep "^FreeBSD .* BHF amd64$"; then
 elif echo $UNAME_A | egrep "CYGWIN|MING" >/dev/null; then
   SUDO=
 else
+  if ! type sudo >/dev/null 2>/dev/null; then
+    echo >&2 "sudo not found"
+    exit 1
+  fi
   SUDO=sudo
 fi
 APTGET=/bin/false
