@@ -301,7 +301,13 @@ configureEPICSmodule()
         echo "#empty" >RELEASE_LIBS.local &&
         create_BASE_SUPPORT_RELEASE_HOST_ARCH_local RELEASE_PATHS.local.$EPICS_HOST_ARCH $EPICS_MODULE &&
         disable_MOTOR_DRIVERS                       RELEASE_PATHS.local.$EPICS_HOST_ARCH
+      fi &&
+      if test $EPICS_MODULE=asyn && test -d /usr/include/tirpc; then
+        if ! grep -q "^TIRPC=YES" CONFIG_SITE.Common.$EPICS_HOST_ARCH; then
+          echo TIRPC=YES >> CONFIG_SITE.Common.$EPICS_HOST_ARCH
+        fi
       fi
+    exit
   )
 }
 
