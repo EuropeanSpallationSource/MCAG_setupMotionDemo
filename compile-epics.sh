@@ -9,14 +9,21 @@ EPICS_MODULES_PATH=
 
 MAKE=make
 UNAME_A=$(uname -a)
-if echo $UNAME_A | grep "^FreeBSD .* BHF amd64$"; then
-  SUDO=doas
-  MAKE=gmake
-elif echo $UNAME_A | egrep "CYGWIN|MING" >/dev/null; then
-  SUDO=
-else
-  SUDO=sudo
-fi
+case $UNAME_A in
+  FreeBSD*BHF*amd64)
+    SUDO=doas
+    MAKE=gmake
+  ;;
+  FreeBSD*)
+    MAKE=gmake
+  ;;
+  *CYGWIN*|*MING*)
+    SUDO=
+  ;;
+  *)
+    SUDO=sudo
+  ;;
+esac
 APTGET=/bin/false
 if type apt-get >/dev/null 2>/dev/null; then
   APTGET="$SUDO apt-get install"
@@ -502,14 +509,17 @@ $CP $BASH_ALIAS_EPICS ../.. &&
   addpacketifneeded $MAKE &&
   # We need gcc and g++: gcc-g++ under Scientifc Linux
   # or gcc
-  if ! type g++ >/dev/null 2>/dev/null; then
-    echo $APTGET gcc-c++
-    $APTGET gcc-c++ || $APTGET gcc
-  fi
-  # We need g++
-  if ! type g++ >/dev/null 2>/dev/null; then
-    echo $APTGET g++
-    $APTGET g++
+  # FreeBSD has c++
+  if ! type c++ >/dev/null 2>/dev/null; then
+    if ! type g++ >/dev/null 2>/dev/null; then
+      echo $APTGET gcc-c++
+      $APTGET gcc-c++ || $APTGET gcc
+    fi
+    # We need g++
+    if ! type g++ >/dev/null 2>/dev/null; then
+      echo $APTGET g++
+      $APTGET g++
+    fi
   fi &&
   #We need readline
   # Mac OS: /usr/include/readline/readline.h
