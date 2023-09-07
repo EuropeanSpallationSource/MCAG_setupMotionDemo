@@ -546,6 +546,11 @@ $CP $BASH_ALIAS_EPICS ../.. &&
       exit 1
     }
   fi &&
+  if test -d epics/modules/pvxs; then
+    if ! test -r /opt/local/include//event2/event.h; then
+      $APTGET libevent
+    fi
+  fi &&
   if test "$EPICS_DEBUG" = y; then
     patch_CONFIG_gnuCommon $EPICS_ROOT/base/configure
   fi
