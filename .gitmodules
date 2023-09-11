@@ -19,3 +19,6 @@
 [submodule "epics/modules/ethercatmc"]
 	path = epics/modules/ethercatmc
 	url = https://github.com/EuropeanSpallationSource/m-epics-ethercatmc.git
+[submodule "epics/modules/pvxs"]
+	path = epics/modules/pvxs
+	url = https://github.com/mdavidsaver/pvxs.git
