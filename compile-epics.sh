@@ -505,6 +505,12 @@ fi
 export PATH=\$PATH:\$EPICS_BASE_BIN:\$EPICS_EXT_BIN
 export SUPPORT=\${EPICS_ROOT}/support
 EOF
+if test -d epics/modules/pvxs; then
+cat >>${BASH_ALIAS_EPICS} <<EOF
+export PATH=\$PATH:\$EPICS_ROOT/modules/pvxs/bin/$EPICS_HOST_ARCH
+EOF
+fi
+
 . $BASH_ALIAS_EPICS &&
 set | grep EPICS &&
 $CP $BASH_ALIAS_EPICS $EPICS_ROOT/.epics.$EPICS_HOST_ARCH &&
@@ -547,7 +553,9 @@ $CP $BASH_ALIAS_EPICS ../.. &&
     }
   fi &&
   if test -d epics/modules/pvxs; then
-    if ! test -r /opt/local/include//event2/event.h; then
+    if ! test -r /usr/include/event2/event.h &&
+      ! test -r /opt/local/include//event2/event.h; then
+      $APTGET libevent-devel ||
       $APTGET libevent
     fi
   fi &&
