@@ -555,6 +555,7 @@ $CP $BASH_ALIAS_EPICS ../.. &&
   if test -d epics/modules/pvxs; then
     if ! test -r /usr/include/event2/event.h &&
       ! test -r /opt/local/include//event2/event.h; then
+      $APTGET libevent-dev ||
       $APTGET libevent-devel ||
       $APTGET libevent
     fi
