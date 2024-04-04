@@ -12,7 +12,7 @@
 	url = https://github.com/epics-modules/calc.git
 [submodule "epics/modules/ads"]
 	path = epics/modules/ads
-	url = git@bitbucket.org:europeanspallationsource/m-epics-twincat-ads.git
+	url = https://github.com/EuropeanSpallationSource/epics-twincat-ads
 [submodule "epics/modules/StreamDevice"]
 	path = epics/modules/StreamDevice
 	url = https://github.com/paulscherrerinstitute/StreamDevice.git
