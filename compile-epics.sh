@@ -572,6 +572,8 @@ if test -z "$EPICS_MODULE"; then
   done
   # configure modules
   for EPICS_MODULE in asyn ads calc pcas cacm motor pvxs ethercatmc; do
+    # Remove empty directories
+    rmdir $EPICS_ROOT/modules/$EPICS_MODULE || :
     if ! test -d $EPICS_ROOT/modules/$EPICS_MODULE; then
       continue
     fi
