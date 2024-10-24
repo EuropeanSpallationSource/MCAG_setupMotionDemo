@@ -507,6 +507,12 @@ if test "\$(which caget)" != \$EPICS_BASE_BIN; then
   fi
 fi
 EOF
+if test -d epics/modules/pvxs; then
+cat >>${BASH_ALIAS_EPICS} <<EOF
+export PATH=\$PATH:\$EPICS_ROOT/modules/pvxs/bin/$EPICS_HOST_ARCH
+EOF
+fi
+
 . $BASH_ALIAS_EPICS &&
 set | grep EPICS &&
 $CP $BASH_ALIAS_EPICS $EPICS_ROOT/.epics.$EPICS_HOST_ARCH &&
@@ -547,6 +553,14 @@ $CP $BASH_ALIAS_EPICS ../.. &&
       echo >&2 can not install readline-devel
       exit 1
     }
+  fi &&
+  if test -d epics/modules/pvxs; then
+    if ! test -r /usr/include/event2/event.h &&
+      ! test -r /opt/local/include//event2/event.h; then
+      $APTGET libevent-dev ||
+      $APTGET libevent-devel ||
+      $APTGET libevent
+    fi
   fi &&
   if test "$EPICS_DEBUG" = y; then
     patch_CONFIG_gnuCommon $EPICS_ROOT/base/configure
