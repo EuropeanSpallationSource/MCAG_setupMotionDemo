@@ -497,13 +497,15 @@ export EPICS_MODULES=\$EPICS_ROOT/modules
 export EPICS_BASE_BIN=\${EPICS_BASE}/bin/\$EPICS_HOST_ARCH
 export EPICS_BASE_LIB=\${EPICS_BASE}/lib/\$EPICS_HOST_ARCH
 export LD_LIBRARY_PATH=\${EPICS_BASE_LIB}:\$LD_LIBRARY_PATH
-if test "\$LD_LIBRARY_PATH"; then
-  export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$EPICS_BASE_LIB
-else
-  export LD_LIBRARY_PATH=\$EPICS_EXT_LIB
-fi
-export PATH=\$PATH:\$EPICS_BASE_BIN:\$EPICS_EXT_BIN
 export SUPPORT=\${EPICS_ROOT}/support
+if test "\$(which caget)" != \$EPICS_BASE_BIN; then
+  export PATH=\$EPICS_BASE_BIN:\$EPICS_EXT_BIN:\$PATH
+  if test "\$LD_LIBRARY_PATH"; then
+    export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$EPICS_BASE_LIB
+  else
+    export LD_LIBRARY_PATH=\$EPICS_EXT_LIB
+  fi
+fi
 EOF
 . $BASH_ALIAS_EPICS &&
 set | grep EPICS &&
