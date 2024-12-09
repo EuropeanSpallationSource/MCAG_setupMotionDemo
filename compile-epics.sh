@@ -290,6 +290,11 @@ configureEPICSmodule()
       if grep '^-include \$(TOP)/../RELEASE.\$(EPICS_HOST_ARCH).local' RELEASE; then
         echo "$EPICS_MODULE: RELEASE style RELEASE.EPICS_HOST_ARCH.local"
         echo 'include $(TOP)/configure/RELEASE_PATHS.local.$(EPICS_HOST_ARCH)' >RELEASE.local &&
+        if grep -E "[A-Z_]+=/[a-zA-Z]" RELEASE; then
+          echo 'Commenting out hard-coded paths' &&
+          sed -e 's!^\([A-Z][A-Z_]*=/[a-zA-Z]\)!#\1!g' <RELEASE >/tmp/$$ &&
+          mv /tmp/$$ RELEASE
+        fi &&
         create_BASE_SUPPORT_RELEASE_HOST_ARCH_local RELEASE_PATHS.local.$EPICS_HOST_ARCH $EPICS_MODULE
       elif egrep "^SUPPORT=|^EPICS_BASE *= */" RELEASE; then
         echo "$EPICS_MODULE: RELEASE style RELEASE-allows-no-local"
