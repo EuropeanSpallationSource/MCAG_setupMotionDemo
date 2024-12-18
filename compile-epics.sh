@@ -94,7 +94,7 @@ install_re2c()
     $MV re2c-code-git.$$.tmp  re2c-code-git
   fi &&
   (
-    cd re2c-code-git/re2c &&
+    cd re2c-code-git &&
     addpacketifneeded automake &&
     ./autogen.sh &&
     ./configure &&
@@ -169,7 +169,11 @@ EOF
   if test -z "$SEQ_VER_X_Y"; then
     echo SEQ=                          >>$file
   fi &&
-  if test -z "$SNCSEQ_VER_X_Y"; then
+  if test -d "$EPICS_BASE/../modules/seq"; then
+    cat >>$file <<EOF
+SNCSEQ        = \$(EPICS_BASE)/../modules/seq
+EOF
+  elif test -z "$SNCSEQ_VER_X_Y"; then
     echo SNCSEQ=                       >>$file
   fi
   if test -z "$SSCAN_VER_X_Y"; then
@@ -469,6 +473,8 @@ if test -n "$EPICS_MODULE"; then
              exit 1
            }
        fi
+    elif test $EPICS_MODULE = re2c; then
+         install_re2c
     else
       . $BASH_ALIAS_EPICS &&
       checkoutEPICSmodule $EPICS_MODULE &&
@@ -592,7 +598,7 @@ if test -z "$EPICS_MODULE"; then
     fi
   done
   # configure modules
-  for EPICS_MODULE in asyn ads calc pcas cacm motor pvxs ethercatmc; do
+  for EPICS_MODULE in asyn ads seq calc pcas cacm motor pvxs ethercatmc; do
     # Remove empty directories
     rmdir $EPICS_ROOT/modules/$EPICS_MODULE || :
     if ! test -d $EPICS_ROOT/modules/$EPICS_MODULE; then
