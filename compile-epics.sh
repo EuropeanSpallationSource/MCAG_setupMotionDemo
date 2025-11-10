@@ -311,9 +311,11 @@ configureEPICSmodule()
         create_BASE_SUPPORT_RELEASE_HOST_ARCH_local RELEASE_PATHS.local.$EPICS_HOST_ARCH $EPICS_MODULE &&
         disable_MOTOR_DRIVERS                       RELEASE_PATHS.local.$EPICS_HOST_ARCH
       fi &&
-      if test $EPICS_MODULE=asyn && test -d /usr/include/tirpc; then
-        if ! grep -q "^TIRPC=YES" CONFIG_SITE.Common.$EPICS_HOST_ARCH; then
-          echo TIRPC=YES >> CONFIG_SITE.Common.$EPICS_HOST_ARCH
+      if test asyn = $EPICS_MODULE; then
+        if test -d /usr/include/tirpc; then
+          if ! grep -q "^TIRPC=YES" CONFIG_SITE.Common.$EPICS_HOST_ARCH; then
+            echo TIRPC=YES >> CONFIG_SITE.Common.$EPICS_HOST_ARCH
+          fi
         fi
       fi
     exit
@@ -572,6 +574,9 @@ $CP $BASH_ALIAS_EPICS ../.. &&
       $APTGET libevent-devel ||
       $APTGET libevent
     fi
+  fi &&
+  if test -z $(find /usr/include/tirpc/rpc/rpc.h); then
+    $APTGET libtirpc-dev
   fi &&
   if test "$EPICS_DEBUG" = y; then
     patch_CONFIG_gnuCommon $EPICS_ROOT/base/configure
