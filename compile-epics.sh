@@ -169,7 +169,7 @@ EOF
   if test -z "$SEQ_VER_X_Y"; then
     echo SEQ=                          >>$file
   fi &&
-  if test -d "$EPICS_BASE/../modules/seq"; then
+  if test -d "$EPICS_BASE/../modules/seq/configure"; then
     cat >>$file <<EOF
 SNCSEQ        = \$(EPICS_BASE)/../modules/seq
 EOF
