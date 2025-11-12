@@ -567,6 +567,13 @@ $CP $BASH_ALIAS_EPICS ../.. &&
       exit 1
     }
   fi &&
+  {
+    if test "linux-x86_64" = "$EPICS_HOST_ARCH" ; then
+      if test -z $(find /usr/include -name rpc.h); then
+        $APTGET libtirpc-dev
+      fi
+    fi
+  } &&
   if test -d epics/modules/pvxs; then
     if ! test -r /usr/include/event2/event.h &&
       ! test -r /opt/local/include//event2/event.h; then
@@ -574,9 +581,6 @@ $CP $BASH_ALIAS_EPICS ../.. &&
       $APTGET libevent-devel ||
       $APTGET libevent
     fi
-  fi &&
-  if test -z $(find /usr/include/tirpc/rpc/rpc.h); then
-    $APTGET libtirpc-dev
   fi &&
   if test "$EPICS_DEBUG" = y; then
     patch_CONFIG_gnuCommon $EPICS_ROOT/base/configure
