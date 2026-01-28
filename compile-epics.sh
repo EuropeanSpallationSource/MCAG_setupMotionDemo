@@ -94,7 +94,7 @@ install_re2c()
     $MV re2c-code-git.$$.tmp  re2c-code-git
   fi &&
   (
-    cd re2c-code-git/re2c &&
+    cd re2c-code-git &&
     addpacketifneeded automake &&
     ./autogen.sh &&
     ./configure &&
@@ -169,7 +169,11 @@ EOF
   if test -z "$SEQ_VER_X_Y"; then
     echo SEQ=                          >>$file
   fi &&
-  if test -z "$SNCSEQ_VER_X_Y"; then
+  if test -d "$EPICS_BASE/../modules/seq/configure"; then
+    cat >>$file <<EOF
+SNCSEQ        = \$(EPICS_BASE)/../modules/seq
+EOF
+  elif test -z "$SNCSEQ_VER_X_Y"; then
     echo SNCSEQ=                       >>$file
   fi
   if test -z "$SSCAN_VER_X_Y"; then
@@ -290,6 +294,11 @@ configureEPICSmodule()
       if grep '^-include \$(TOP)/../RELEASE.\$(EPICS_HOST_ARCH).local' RELEASE; then
         echo "$EPICS_MODULE: RELEASE style RELEASE.EPICS_HOST_ARCH.local"
         echo 'include $(TOP)/configure/RELEASE_PATHS.local.$(EPICS_HOST_ARCH)' >RELEASE.local &&
+        if grep -E "[A-Z_]+=/[a-zA-Z]" RELEASE; then
+          echo 'Commenting out hard-coded paths' &&
+          sed -e 's!^\([A-Z][A-Z_]*=/[a-zA-Z]\)!#\1!g' <RELEASE >/tmp/$$ &&
+          mv /tmp/$$ RELEASE
+        fi &&
         create_BASE_SUPPORT_RELEASE_HOST_ARCH_local RELEASE_PATHS.local.$EPICS_HOST_ARCH $EPICS_MODULE
       elif egrep "^SUPPORT=|^EPICS_BASE *= */" RELEASE; then
         echo "$EPICS_MODULE: RELEASE style RELEASE-allows-no-local"
@@ -302,9 +311,11 @@ configureEPICSmodule()
         create_BASE_SUPPORT_RELEASE_HOST_ARCH_local RELEASE_PATHS.local.$EPICS_HOST_ARCH $EPICS_MODULE &&
         disable_MOTOR_DRIVERS                       RELEASE_PATHS.local.$EPICS_HOST_ARCH
       fi &&
-      if test $EPICS_MODULE=asyn && test -d /usr/include/tirpc; then
-        if ! grep -q "^TIRPC=YES" CONFIG_SITE.Common.$EPICS_HOST_ARCH; then
-          echo TIRPC=YES >> CONFIG_SITE.Common.$EPICS_HOST_ARCH
+      if test asyn = $EPICS_MODULE; then
+        if test -d /usr/include/tirpc; then
+          if ! grep -q "^TIRPC=YES" CONFIG_SITE.Common.$EPICS_HOST_ARCH; then
+            echo TIRPC=YES >> CONFIG_SITE.Common.$EPICS_HOST_ARCH
+          fi
         fi
       fi
     exit
@@ -464,6 +475,8 @@ if test -n "$EPICS_MODULE"; then
              exit 1
            }
        fi
+    elif test $EPICS_MODULE = re2c; then
+         install_re2c
     else
       . $BASH_ALIAS_EPICS &&
       checkoutEPICSmodule $EPICS_MODULE &&
@@ -497,13 +510,15 @@ export EPICS_MODULES=\$EPICS_ROOT/modules
 export EPICS_BASE_BIN=\${EPICS_BASE}/bin/\$EPICS_HOST_ARCH
 export EPICS_BASE_LIB=\${EPICS_BASE}/lib/\$EPICS_HOST_ARCH
 export LD_LIBRARY_PATH=\${EPICS_BASE_LIB}:\$LD_LIBRARY_PATH
-if test "\$LD_LIBRARY_PATH"; then
-  export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$EPICS_BASE_LIB
-else
-  export LD_LIBRARY_PATH=\$EPICS_EXT_LIB
-fi
-export PATH=\$PATH:\$EPICS_BASE_BIN:\$EPICS_EXT_BIN
 export SUPPORT=\${EPICS_ROOT}/support
+if test "\$(which caget)" != \$EPICS_BASE_BIN; then
+  export PATH=\$EPICS_BASE_BIN:\$EPICS_EXT_BIN:\$PATH
+  if test "\$LD_LIBRARY_PATH"; then
+    export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$EPICS_BASE_LIB
+  else
+    export LD_LIBRARY_PATH=\$EPICS_EXT_LIB
+  fi
+fi
 EOF
 if test -d epics/modules/pvxs; then
 cat >>${BASH_ALIAS_EPICS} <<EOF
@@ -552,6 +567,13 @@ $CP $BASH_ALIAS_EPICS ../.. &&
       exit 1
     }
   fi &&
+  {
+    if test "linux-x86_64" = "$EPICS_HOST_ARCH" ; then
+      if test -z $(find /usr/include -name rpc.h); then
+        $APTGET libtirpc-dev
+      fi
+    fi
+  } &&
   if test -d epics/modules/pvxs; then
     if ! test -r /usr/include/event2/event.h &&
       ! test -r /opt/local/include//event2/event.h; then
@@ -585,7 +607,9 @@ if test -z "$EPICS_MODULE"; then
     fi
   done
   # configure modules
-  for EPICS_MODULE in asyn ads calc pcas cacm motor pvxs ethercatmc; do
+  for EPICS_MODULE in asyn ads seq calc pcas cacm motor pvxs ethercatmc; do
+    # Remove empty directories
+    rmdir $EPICS_ROOT/modules/$EPICS_MODULE || :
     if ! test -d $EPICS_ROOT/modules/$EPICS_MODULE; then
       continue
     fi

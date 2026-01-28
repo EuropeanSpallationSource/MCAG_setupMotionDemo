@@ -40,6 +40,10 @@ pvxs:
 	./checkws.sh
 	/bin/sh -e -x ./compile-epics.sh -m pvxs
 
+re2c:
+	./checkws.sh
+	/bin/sh -e -x ./compile-epics.sh -m re2c
+
 
 Streamdevice:
 	./checkws.sh
@@ -64,6 +68,7 @@ help:
 	@echo make ethercatmc
 	@echo make pcas
 	@echo make pvxs
+	@echo make re2c
 	@echo make Streamdevice
 
 
