@@ -7,6 +7,9 @@ EPICS_ENV_PATH=
 EPICS_HOST_ARCH=
 EPICS_MODULES_PATH=
 
+# Modules to compile. The order is important.
+EPICS_MODULES="asyn ads seq calc pcas cacm motor pvxs ethercatmc"
+
 MAKE=make
 UNAME_A=$(uname -a)
 case $UNAME_A in
@@ -597,7 +600,7 @@ if test -z "$EPICS_MODULE"; then
     fi
   done
   # configure modules
-  for EPICS_MODULE in asyn ads seq calc pcas cacm motor pvxs ethercatmc; do
+  for EPICS_MODULE in $EPICS_MODULES; do
     # Remove empty directories
     rmdir $EPICS_ROOT/modules/$EPICS_MODULE || :
     if ! test -d $EPICS_ROOT/modules/$EPICS_MODULE; then
@@ -611,7 +614,7 @@ if test -z "$EPICS_MODULE"; then
   # compile modules
   (
     cd epics/modules &&
-      for EPICS_MODULE in calc asyn ads motor * ; do
+      for EPICS_MODULE in $EPICS_MODULES * ; do
         if test -d $EPICS_MODULE; then
           compileEPICSmodule $EPICS_MODULE || {
             echo >&2 failed $EPICS_MODULE
