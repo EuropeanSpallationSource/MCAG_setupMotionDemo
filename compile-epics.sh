@@ -8,7 +8,7 @@ EPICS_HOST_ARCH=
 EPICS_MODULES_PATH=
 
 # Modules to compile. The order is important.
-EPICS_MODULES="asyn ads seq calc pcas cacm motor pvxs ethercatmc"
+EPICS_MODULES="calc asyn ads seq pcas cacm motor pvxs ethercatmc"
 
 MAKE=make
 UNAME_A=$(uname -a)
@@ -499,7 +499,6 @@ export EPICS_EXT=\${EPICS_ROOT}/extensions
 export EPICS_HOST_ARCH=$EPICS_HOST_ARCH
 export EPICS_EXT_BIN=${EPICS_EXT}/bin/\$EPICS_HOST_ARCH
 export EPICS_EXT_LIB=${EPICS_EXT}/lib/\$EPICS_HOST_ARCH
-export EPICS_MODULES=\$EPICS_ROOT/modules
 export EPICS_BASE_BIN=\${EPICS_BASE}/bin/\$EPICS_HOST_ARCH
 export EPICS_BASE_LIB=\${EPICS_BASE}/lib/\$EPICS_HOST_ARCH
 export LD_LIBRARY_PATH=\${EPICS_BASE_LIB}:\$LD_LIBRARY_PATH
